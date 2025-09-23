@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LP78070F 参数计算器</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --warning-text-color: #856404;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --border-color: #ced4da;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6; color: #343a40; background-color: var(--light-gray); margin: 0; padding: 20px;
+        }
+        .container {
+            width: 95%; max-width: 1300px; margin: 0 auto; background: #fff; border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex;
+        }
+        .input-panel { flex: 1; min-width: 320px; padding: 30px; }
+        .output-panel { flex: 1.5; padding: 30px; background-color: #fcfdff; border-left: 1px solid var(--medium-gray); }
+        h1, h2 { color: var(--primary-color); border-bottom: 2px solid var(--medium-gray); padding-bottom: 10px; margin-top: 0; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-gray); }
+        .input-wrapper { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 6px; }
+        .input-wrapper:focus-within { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
+        .input-wrapper.input-error { border-color: var(--danger-color); }
+        .input-wrapper.input-warning { border-color: var(--warning-color); }
+        .input-wrapper select, .input-wrapper input {
+            flex-grow: 1; width: 100%; padding: 12px; border: none; background: transparent; font-size: 1.1em; outline: none;
+        }
+        .input-wrapper input { -moz-appearance: textfield; }
+        .input-wrapper .unit {
+            padding: 0 15px; font-weight: 500; color: var(--dark-gray); background-color: var(--medium-gray);
+            border-left: 1px solid var(--border-color); align-self: stretch; display: flex; align-items: center;
+        }
+        .series-selector { display: flex; gap: 15px; margin-bottom: 20px; }
+        .series-selector label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        #results-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .result-card { background: #fff; padding: 15px 20px; border-radius: 8px; border: 1px solid var(--medium-gray); }
+        .result-card h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-color); font-size: 1.1em; }
+        .result-card .main-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--danger-color); /* MODIFICATION: Set main result value to red */
+            margin-bottom: 10px;
+        }
+        .result-card .details { font-size: 0.9em; list-style: none; padding: 0; margin: 0; color: #555; }
+        .result-card .details li { margin-bottom: 5px; }
+        .result-card .details strong {
+            color: var(--success-color); /* MODIFICATION: Set key detail values to green */
+        }
+        .message-container { text-align: center; padding: 20px; border-radius: 8px; display: none; }
+        .message-container.error { background-color: #f8d7da; }
+        .message-container.error p { color: var(--danger-color); font-weight: bold; margin: 0; }
+        .message-container.warning { background-color: #fff3cd; }
+        .message-container.warning p { color: var(--warning-text-color); font-weight: bold; margin: 0; }
+        footer { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--medium-gray); color: #6c757d; font-size: 0.9em; }
+        @media (max-width: 900px) {
+            .container { flex-direction: column; } .input-panel { min-width: 0; }
+            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-panel">
+            <h1>LP78070F 设计参数</h1>
+            <a href="https://oshwhub.com/catsimple/lp78070f-xiao-feng-shan-qu-dong-xin-pian-_-kai-yuan" target="_blank" class="sub-link">
+                 <span style="font-size:0.8em;">LP78070F PCB示例</span>
+            </a>
+            <div class="input-group">
+                <label>电阻系列 (精度)</label>
+                <div class="series-selector">
+                    <label><input type="radio" name="series" value="e24" checked> E24 (5%)</label>
+                    <label><input type="radio" name="series" value="e96"> E96 (1%)</label>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="r1">R1 (高边电阻)</label>
+                <div class="input-wrapper"><select id="r1"></select></div>
+            </div>
+            <div class="input-group">
+                <label for="r2">R2 (低边电阻)</label>
+                <div class="input-wrapper"><select id="r2"></select></div>
+            </div>
+            <div class="input-group">
+                <label for="v1">一档电压 (目标值)</label>
+                <div class="input-wrapper" id="v1Wrapper"><input type="number" step="any" id="v1"><span class="unit">V</span></div>
+            </div>
+            <div class="input-group">
+                <label for="v2">二档电压 (目标值)</label>
+                <div class="input-wrapper" id="v2Wrapper"><input type="number" step="any" id="v2"><span class="unit">V</span></div>
+            </div>
+            <div class="input-group">
+                <label for="v3">三档电压 (目标值)</label>
+                <div class="input-wrapper" id="v3Wrapper"><input type="number" step="any" id="v3"><span class="unit">V</span></div>
+            </div>
+        </div>
+        <div class="output-panel">
+            <h1>计算结果</h1>
+            <div id="message-container" class="message-container"><p id="message-text"></p></div>
+            <div id="results-container">
+                <div class="result-card">
+                    <h3>VFB 反馈电阻</h3>
+                    <div class="main-value"><span id="r1Rec"></span> kΩ</div>
+                    <ul class="details">
+                        <li>R1 (最佳匹配): <strong><span id="r1StdVal"></span> kΩ</strong></li>
+                        <li>R2 (最佳匹配): <strong><span id="r2StdVal"></span> kΩ</strong></li>
+                    </ul>
+                </div>
+                 <div class="result-card">
+                    <h3>实际输出电压</h3>
+                    <ul class="details">
+                        <li style="font-size: 1.1em;">一档: <strong><span id="v1Final"></span> V</strong></li><br>
+                        <li style="font-size: 1.1em;">二档: <strong><span id="v2Final"></span> V</strong></li><br>
+                        <li style="font-size: 1.1em;">三档: <strong><span id="v3Final"></span> V</strong></li>
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>Cout (输出电容)</h3>
+                    <div class="main-value" id="coutRec" style="color: #333;">≥ 22 µF</div>
+                     <ul class="details">
+                         <li>推荐使用低ESR陶瓷电容</li>
+                         <li>推荐耐压: <strong>≥ <span id="coutVoltRec"></span> V</strong></li>
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>L (功率电感)</h3>
+                    <div class="main-value" style="color: #333;">≥ 3.0 A</div>
+                    <ul class="details">
+                         <li><strong>推荐电感值:</strong> 4.7 µH</li>
+                         <li><strong>推荐饱和电流 (Isat):</strong> > 2.5 A</li>
+                         <li><small>为保证系统稳定，建议选择饱和电流大于 <strong>3.0A</strong> 的电感。</small></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>本计算器根据 LP78070F 数据手册制作。计算结果仅供参考，最终设计需经过实际测试验证</p>
+        <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
+            </svg>
+        </a>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const VFB = { v1: 0.6, v2: 0.9, v3: 1.2 };
+        const V_MAX_V3 = 12.0;
+        const V_MIN_REC_V1 = 3.7;
+        const CAP_VOLTAGE_RATINGS = [6.3, 10, 16, 25, 35, 50];
+        const E_SERIES = {
+            e24: [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1],
+            e96: [1.00,1.02,1.05,1.07,1.10,1.13,1.15,1.18,1.21,1.24,1.27,1.30,1.33,1.37,1.40,1.43,1.47,1.50,1.54,1.58,1.62,1.65,1.69,1.74,1.78,1.82,1.87,1.91,1.96,2.00,2.05,2.10,2.15,2.21,2.26,2.32,2.37,2.43,2.49,2.55,2.61,2.67,2.74,2.80,2.87,2.94,3.01,3.09,3.16,3.24,3.32,3.40,3.48,3.57,3.65,3.74,3.83,3.92,4.02,4.12,4.22,4.32,4.42,4.53,4.64,4.75,4.87,4.99,5.11,5.23,5.36,5.49,5.62,5.76,5.90,6.04,6.19,6.34,6.49,6.65,6.81,6.98,7.15,7.32,7.50,7.68,7.87,8.06,8.25,8.45,8.66,8.87,9.09,9.31,9.53,9.76]
+        };
+        const elements = {
+            r1: document.getElementById('r1'), r2: document.getElementById('r2'),
+            v1: document.getElementById('v1'), v2: document.getElementById('v2'), v3: document.getElementById('v3'),
+            v1Wrapper: document.getElementById('v1Wrapper'), v3Wrapper: document.getElementById('v3Wrapper'),
+            r1Rec: document.getElementById('r1Rec'), r1StdVal: document.getElementById('r1StdVal'), r2StdVal: document.getElementById('r2StdVal'),
+            v1Final: document.getElementById('v1Final'), v2Final: document.getElementById('v2Final'), v3Final: document.getElementById('v3Final'),
+            coutVoltRec: document.getElementById('coutVoltRec'),
+            messageContainer: document.getElementById('message-container'), messageText: document.getElementById('message-text'),
+            resultsContainer: document.getElementById('results-container'),
+            seriesRadios: document.querySelectorAll('input[name="series"]')
+        };
+        let activeElementId = null;
+        let resistorOptions = [];
+
+        function generateResistorOptions(seriesKey) {
+            const values = E_SERIES[seriesKey];
+            const options = new Set();
+            const magnitudes = [0.1, 1, 10, 100];
+            magnitudes.forEach(mag => {
+                values.forEach(val => {
+                    let resValue = parseFloat((val * mag).toPrecision(3));
+                    if (resValue >= 0.1 && resValue <= 1000) {
+                       options.add(resValue);
+                    }
+                });
+            });
+            return Array.from(options).sort((a, b) => a - b);
+        }
+
+        function populateSelect(selectElement, options, defaultValue) {
+            selectElement.innerHTML = '';
+            options.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = `${value} kΩ`;
+                selectElement.appendChild(option);
+            });
+            selectElement.value = defaultValue;
+        }
+
+        function findNextStandardVoltage(requiredVoltage) {
+            return CAP_VOLTAGE_RATINGS.find(rating => rating >= requiredVoltage) || CAP_VOLTAGE_RATINGS[CAP_VOLTAGE_RATINGS.length - 1];
+        }
+
+        function findBestResistorPair(targetRatio, options) {
+            let bestPair = { r1: 0, r2: 0, error: Infinity };
+            const r2Candidates = options.filter(r => r >= 1 && r <= 100);
+            for (const r2 of r2Candidates) {
+                const idealR1 = targetRatio * r2;
+                const closestR1 = options.reduce((prev, curr) => Math.abs(curr - idealR1) < Math.abs(prev - idealR1) ? curr : prev);
+                const currentRatio = closestR1 / r2;
+                const error = Math.abs(currentRatio - targetRatio);
+                if (error < bestPair.error) {
+                    bestPair = { r1: closestR1, r2, error };
+                }
+            }
+            return bestPair;
+        }
+
+        function updateDropdownsAndCalculate() {
+            const selectedSeries = document.querySelector('input[name="series"]:checked').value;
+            resistorOptions = generateResistorOptions(selectedSeries);
+            populateSelect(elements.r1, resistorOptions, 68);
+            populateSelect(elements.r2, resistorOptions, 10);
+            calculate();
+        }
+
+        function calculate() {
+            let R1, R2;
+            const triggerId = activeElementId;
+
+            if (triggerId && triggerId.startsWith('v')) {
+                const targetV = parseFloat(elements[triggerId].value);
+                if (isNaN(targetV) || targetV <= 0) return;
+                
+                const vfb = VFB[triggerId];
+                const targetRatio = (targetV / vfb) - 1;
+                const bestPair = findBestResistorPair(targetRatio, resistorOptions);
+                R1 = bestPair.r1;
+                R2 = bestPair.r2;
+
+                elements.r1.value = R1;
+                elements.r2.value = R2;
+            } else {
+                R1 = parseFloat(elements.r1.value);
+                R2 = parseFloat(elements.r2.value);
+            }
+            
+            if (isNaN(R1) || isNaN(R2) || R2 <= 0) return;
+
+            const vRatio = 1 + (R1 / R2);
+            const V1 = vRatio * VFB.v1;
+            const V2 = vRatio * VFB.v2;
+            const V3 = vRatio * VFB.v3;
+
+            if (triggerId !== 'v1') elements.v1.value = V1.toFixed(2);
+            if (triggerId !== 'v2') elements.v2.value = V2.toFixed(2);
+            if (triggerId !== 'v3') elements.v3.value = V3.toFixed(2);
+
+            elements.r1Rec.textContent = R1;
+            elements.r1StdVal.textContent = R1;
+            elements.r2StdVal.textContent = R2;
+            elements.v1Final.textContent = V1.toFixed(2);
+            elements.v2Final.textContent = V2.toFixed(2);
+            elements.v3Final.textContent = V3.toFixed(2);
+            elements.coutVoltRec.textContent = findNextStandardVoltage(V3 * 1.5);
+            
+            elements.v1Wrapper.classList.remove('input-warning');
+            elements.v3Wrapper.classList.remove('input-error');
+            if (V3 > V_MAX_V3) {
+                elements.v3Wrapper.classList.add('input-error');
+                elements.messageContainer.className = 'message-container error';
+                elements.messageText.textContent = `错误：实际电压 (${V3.toFixed(2)}V) 已超过最大限制 12V。`;
+                elements.messageContainer.style.display = 'block';
+                elements.resultsContainer.style.display = 'none';
+            } else if (V1 < V_MIN_REC_V1) {
+                elements.v1Wrapper.classList.add('input-warning');
+                elements.messageContainer.className = 'message-container warning';
+                elements.messageText.textContent = `警告：实际电压 (${V1.toFixed(2)}V) 低于推荐值 3.7V。`;
+                elements.messageContainer.style.display = 'block';
+                elements.resultsContainer.style.display = 'grid';
+            } else {
+                elements.messageContainer.style.display = 'none';
+                elements.resultsContainer.style.display = 'grid';
+            }
+        }
+        
+        const allInputs = [elements.r1, elements.r2, elements.v1, elements.v2, elements.v3];
+        allInputs.forEach(input => {
+            input.addEventListener('focus', e => { activeElementId = e.target.id; });
+            input.addEventListener('change', calculate);
+            input.addEventListener('blur', e => {
+                 if(e.target.type === 'number' && e.target.value) {
+                    e.target.value = parseFloat(e.target.value).toFixed(2);
+                 }
+            });
+        });
+        elements.seriesRadios.forEach(radio => radio.addEventListener('change', updateDropdownsAndCalculate));
+        
+        updateDropdownsAndCalculate();
+    });
+    </script>
+</body>
+</html>
