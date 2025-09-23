@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SY7200A 参数计算器</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --border-color: #ced4da;
+            --error-bg-color: #f8d7da;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6; color: #343a40; background-color: var(--light-gray); margin: 0; padding: 20px;
+        }
+        .container {
+            width: 95%; max-width: 1600px; margin: 0 auto; background: #fff; border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex;
+        }
+        .input-panel { flex: 1; min-width: 320px; padding: 30px; }
+        .output-panel { 
+            flex: 1.5; padding: 30px; background-color: #fcfdff; border-left: 1px solid var(--medium-gray);
+        }
+        h1, h2, h3 { color: var(--primary-color); }
+        h1 { border-bottom: 2px solid var(--medium-gray); padding-bottom: 10px; margin-top: 0; }
+        h3 { margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--medium-gray); padding-bottom: 8px;}
+        .input-group { margin-bottom: 20px; max-width: 350px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-gray); }
+        .label-note { font-weight: normal; font-size: 0.8em; color: #6c757d; margin-left: 8px; }
+        .input-wrapper { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 6px; }
+        .input-wrapper:focus-within { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
+        .input-wrapper.input-error { border-color: var(--danger-color); }
+        .input-wrapper input {
+            flex-grow: 1; width: 100%; padding: 12px; border: none; background: transparent; font-size: 1.1em; outline: none;
+            -moz-appearance: textfield;
+        }
+        .input-wrapper .unit {
+            padding: 0 15px; font-weight: 500; color: var(--dark-gray); background-color: var(--medium-gray);
+            border-left: 1px solid var(--border-color); align-self: stretch; display: flex; align-items: center;
+        }
+        .inline-group { display: flex; flex-wrap: wrap; gap: 10px; max-width: none; }
+        .inline-group .input-group { flex: 1 1 120px; max-width: none; margin-bottom: 0; }
+        .inline-group .input-group label { font-size: 0.9em; }
+
+        #results-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .result-card { background: #fff; padding: 15px 20px; border-radius: 8px; border: 1px solid var(--medium-gray); }
+        .result-card h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-color); font-size: 1.1em; }
+        .result-card .main-value { font-size: 1.8em; font-weight: bold; color: var(--danger-color); margin-bottom: 10px; }
+        .result-card .details { font-size: 0.9em; list-style: none; padding: 0; margin: 0; color: #555; }
+        .result-card .details li { margin-bottom: 5px; }
+        .result-card .details strong { color: var(--success-color); }
+        .error-message-container {
+            color: var(--danger-color); font-weight: bold; text-align: center; padding: 20px;
+            background-color: var(--error-bg-color); border-radius: 8px; display: none;
+        }
+        footer { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--medium-gray); color: #6c757d; font-size: 0.9em; }
+        @media (max-width: 900px) {
+            .container { flex-direction: column; } .input-panel { min-width: 0; }
+            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-panel">
+            <h1>SY7200A 设计参数</h1>
+            <a href="https://oshwhub.com/catsimple/sy7200-sheng-ya-chu-mo-ban-yuan-xing" target="_blank" class="sub-link">
+                <span style="font-size:0.8em;">SY7200 PCB示例</span>
+            </a>
+            <h3>LED 灯组参数</h3>
+            <div class="inline-group">
+                <div class="input-group">
+                    <label for="ledVf">单颗正向压降 Vf</label>
+                    <div class="input-wrapper"><input type="number" step="0.1" id="ledVf" value="3.0"><span class="unit">V</span></div>
+                </div>
+                <div class="input-group">
+                    <label for="ledIf">单颗电流 If</label>
+                    <div class="input-wrapper"><input type="number" step="10" id="ledIf" value="150"><span class="unit">mA</span></div>
+                </div>
+                <div class="input-group">
+                    <label for="seriesCount">串联数</label>
+                    <div class="input-wrapper"><input type="number" step="1" id="seriesCount" value="4"><span class="unit">串</span></div>
+                </div>
+                <div class="input-group">
+                    <label for="parallelCount">并联数</label>
+                    <div class="input-wrapper"><input type="number" step="1" id="parallelCount" value="2"><span class="unit">并</span></div>
+                </div>
+            </div>
+
+            <h3>电路参数</h3>
+            <div class="input-group">
+                <label for="vin">输入电压<small class="label-note">2.8V - 30V</small></label>
+                <div class="input-wrapper" id="vinWrapper"><input type="number" step="any" id="vin" value="5"><span class="unit">V</span></div>
+            </div>
+            <div class="input-group">
+                <label for="vout">LED 灯组总电压 (Vout)</label>
+                <div class="input-wrapper" id="voutWrapper"><input type="number" step="any" id="vout" readonly><span class="unit">V</span></div>
+            </div>
+            <div class="input-group">
+                <label for="iout">LED 灯组总电流 (Iout)</label>
+                <div class="input-wrapper" id="ioutWrapper"><input type="number" step="any" id="iout" readonly><span class="unit">mA</span></div>
+            </div>
+             <div class="input-group">
+                <label for="diodeVf">二极管正向压降 (Vd)<small class="label-note">请参考二极管手册</small></label>
+                <div class="input-wrapper" id="diodeVfWrapper"><input type="number" step="0.01" id="diodeVf" value="0.5"><span class="unit">V</span></div>
+            </div>
+        </div>
+        <div class="output-panel" id="outputPanel">
+            <h1>计算结果</h1>
+            <div class="error-message-container" id="errorContainer"><p id="errorMessage"></p></div>
+            <div id="results-container">
+                <div class="result-card">
+                    <h3>R1 (电流采样电阻)</h3>
+                    <div class="main-value"><span id="r1Rec"></span> Ω</div>
+                    <ul class="details">
+                        <li>精确计算值: <span id="r1Exact"></span> Ω</li>
+                        <li><small>R1 = 0.2V / Iout</small></li>
+                    </ul>
+                </div>
+                 <div class="result-card">
+                    <h3>L (功率电感)</h3>
+                    <div class="main-value"><span id="lRec"></span> µH</div>
+                    <ul class="details">
+                        <li>推荐范围: <strong><span id="lExact"></span> µH</strong></li>
+                         <li>峰值电流 (Ipk): <strong><span id="ipkDetail"></span> A</strong></li>
+                         <li>饱和电流 (Isat) 应 >= <strong><span id="isatRec"></span> A</strong></li>
+                        <li><small>基于 40% 输入纹波电流</small></li>
+                    </ul>
+                </div>
+                 <div class="result-card">
+                    <h3>Cout (输出电容)</h3>
+                    <div class="main-value"><span id="coutRec"></span> µF</div>
+                    <ul class="details">
+                        <li>推荐范围: <strong><span id="coutExact"></span> µF</strong></li>
+                         <li>耐压值应 >= <strong><span id="coutVoltRec"></span> V</strong></li>
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>Cin (输入电容)</h3>
+                     <ul class="details">
+                         <li>推荐值: <strong>≥ 10 µF</strong></li>
+                         <li>耐压值应 >= <strong><span id="cinVoltRec"></span> V</strong></li>
+                         <li><small>推荐使用 X7R 陶瓷电容</small></li>
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>功率分析 <small>(效率 85-95%)</small></h3>
+                    <ul class="details">
+                         <li>输出功率 (Pout): <strong><span id="poutValue"></span> W</strong></li>
+                         <li>输入功率 (Pin): <strong><span id="pinValue"></span> W</strong></li>
+                         <li>系统损耗: <strong><span id="lossValue"></span> W</strong></li>
+                    </ul>
+                </div>
+                 <div class="result-card">
+                    <h3>D (续流二极管)</h3>
+                     <ul class="details">
+                         <li>反向耐压 (Vr) >= <strong><span id="diodeVoltRec"></span> V</strong></li>
+                         <li>正向电流 (If) >= <strong><span id="diodeCurrRec"></span> A</strong></li>
+                         <li><small>需选用高速开关的肖特基二极管</small></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+    <p>本计算器根据 SY7200A 数据手册制作。计算结果仅供参考，最终设计需经过实际测试验证</p>
+        <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
+            </svg>
+        </a>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const E24_SERIES = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1];
+        const CAP_E_SERIES = [2.2, 3.3, 4.7, 6.8, 10, 15, 22, 33, 47, 68, 100];
+        const CAP_VOLTAGE_RATINGS = [6.3, 10, 16, 25, 35, 50, 63, 100];
+        const VFB = 0.2; // V
+        const FSW = 1000000; // Hz
+        const RIPPLE_FACTOR = 0.4; // 40%
+        const ILIM = 2.0; // Amps
+        const MAX_DUTY_CYCLE = 0.9; // 90%
+        const MIN_ON_TIME = 100e-9; // 100 ns
+        const MAX_VOUT = 30.0; // Volts
+        const EFF_MIN = 0.85, EFF_MAX = 0.95;
+        const VRIPPLE_MIN_V = 0.02, VRIPPLE_MAX_V = 0.1;
+        
+        const elements = {
+            ledVf: document.getElementById('ledVf'), ledIf: document.getElementById('ledIf'),
+            seriesCount: document.getElementById('seriesCount'), parallelCount: document.getElementById('parallelCount'),
+            vin: document.getElementById('vin'), vout: document.getElementById('vout'),
+            iout: document.getElementById('iout'), diodeVf: document.getElementById('diodeVf'),
+            vinWrapper: document.getElementById('vinWrapper'), voutWrapper: document.getElementById('voutWrapper'),
+            poutValue: document.getElementById('poutValue'), pinValue: document.getElementById('pinValue'),
+            lossValue: document.getElementById('lossValue'),
+            r1Rec: document.getElementById('r1Rec'), r1Exact: document.getElementById('r1Exact'),
+            lRec: document.getElementById('lRec'), lExact: document.getElementById('lExact'),
+            coutRec: document.getElementById('coutRec'), coutExact: document.getElementById('coutExact'),
+            ipkDetail: document.getElementById('ipkDetail'), isatRec: document.getElementById('isatRec'),
+            cinVoltRec: document.getElementById('cinVoltRec'), coutVoltRec: document.getElementById('coutVoltRec'),
+            diodeVoltRec: document.getElementById('diodeVoltRec'), diodeCurrRec: document.getElementById('diodeCurrRec'),
+            errorContainer: document.getElementById('errorContainer'), errorMessage: document.getElementById('errorMessage'),
+            resultsContainer: document.getElementById('results-container')
+        };
+        
+        function findNearestStandardValue(value, series) {
+            if (value <= 0) return 0;
+            let magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+            let normalizedValue = value / magnitude;
+            let closest = series.reduce((prev, curr) => Math.abs(curr - normalizedValue) < Math.abs(prev - normalizedValue) ? curr : prev);
+            return parseFloat((closest * magnitude).toPrecision(2));
+        }
+
+        function findNextStandardCapValue(minValue, series) {
+            return series.find(val => val >= minValue) || series[series.length - 1];
+        }
+        
+        function findNextStandardVoltage(requiredVoltage) {
+            return CAP_VOLTAGE_RATINGS.find(rating => rating >= requiredVoltage) || CAP_VOLTAGE_RATINGS[CAP_VOLTAGE_RATINGS.length - 1];
+        }
+
+        function showError(wrapper, message) {
+            if (wrapper) wrapper.classList.add('input-error');
+            elements.errorMessage.innerHTML = message;
+            elements.errorContainer.style.display = 'block';
+            elements.resultsContainer.style.display = 'none';
+        }
+
+        function calculateAll() {
+            // Step 1: Calculate Vout and Iout from LED array
+            const ledVf = parseFloat(elements.ledVf.value) || 0;
+            const ledIf = parseFloat(elements.ledIf.value) || 0;
+            const series = parseInt(elements.seriesCount.value) || 1;
+            const parallel = parseInt(elements.parallelCount.value) || 1;
+            if (ledVf > 0 && ledIf > 0 && series > 0 && parallel > 0) {
+                elements.vout.value = (ledVf * series).toFixed(2);
+                elements.iout.value = (ledIf * parallel).toFixed(0);
+            }
+
+            // Step 2: Proceed with circuit calculation using the new Vout/Iout
+            Object.values(elements).forEach(el => {
+                if (el.classList && el.classList.contains('input-wrapper')) {
+                    el.classList.remove('input-error');
+                }
+            });
+
+            const Vin = parseFloat(elements.vin.value) || 0;
+            const Vout = parseFloat(elements.vout.value) || 0;
+            const Iout_mA = parseFloat(elements.iout.value) || 0;
+            const DiodeVf = parseFloat(elements.diodeVf.value) || 0;
+            const Iout_A = Iout_mA / 1000;
+
+            if (Vin <= 0 || Vout <= 0 || Iout_A <= 0 || DiodeVf <= 0) {
+                elements.resultsContainer.style.display = 'none';
+                elements.errorContainer.style.display = 'none';
+                return;
+            }
+
+            // --- WORST-CASE (Eff=85%) VALIDATIONS ---
+            const Vout_eff = Vout + DiodeVf;
+            const DutyCycle_worst = (Vout_eff - Vin) / Vout_eff;
+
+            if (Vout > MAX_VOUT) { return showError(elements.voutWrapper, `设计错误：输出电压 (${Vout.toFixed(2)}V) 超过芯片最大限制 (${MAX_VOUT}V)！`); }
+            if (Vout <= Vin) { return showError(elements.vinWrapper, "设计错误：输出电压 (Vout) 必须高于输入电压 (Vin)！"); }
+            
+            const requiredOnTime = DutyCycle_worst / FSW;
+            if (requiredOnTime < MIN_ON_TIME) { return showError(elements.vinWrapper, `设计错误：输入输出压差过小！<br>所需导通时间 (${(requiredOnTime * 1e9).toFixed(1)}ns) 小于芯片最小限制 (${(MIN_ON_TIME * 1e9).toFixed(0)}ns)。请增大压差。`); }
+            if (DutyCycle_worst > MAX_DUTY_CYCLE) { return showError(elements.vinWrapper, `设计错误：输入输出压差过大！<br>所需占空比 (${(DutyCycle_worst * 100).toFixed(1)}%) 超过芯片最大限制 (90%)。请减小压差。`); }
+            
+            const Iin_avg_worst = (Vout * Iout_A) / (Vin * EFF_MIN);
+            const Delta_IL_worst = Iin_avg_worst * RIPPLE_FACTOR;
+            const Ipk_worst = Iin_avg_worst + (Delta_IL_worst / 2);
+            if (Ipk_worst > ILIM) { return showError(null, `设计错误：峰值电流 Ipk (${Ipk_worst.toFixed(2)}A) 已超过芯片开关限制 (2A)！<br>请降低LED电流/数量或提高输入电压。`); }
+            
+            // --- ALL CHECKS PASSED, CALCULATE RANGES ---
+            const Pout = Vout * Iout_A;
+            const Pin_min = Pout / EFF_MAX;
+            const Pin_max = Pout / EFF_MIN;
+            const Loss_min = Pin_min - Pout;
+            const Loss_max = Pin_max - Pout;
+
+            const R1 = VFB / Iout_A;
+
+            const Iin_avg_best = (Vout * Iout_A) / (Vin * EFF_MAX);
+            const Delta_IL_best = Iin_avg_best * RIPPLE_FACTOR;
+            const Ipk_best = Iin_avg_best + (Delta_IL_best / 2);
+
+            const L_H_max = (Vin * DutyCycle_worst) / (Delta_IL_best * FSW); // L is inversely proportional to delta_I, which is proportional to Iin
+            const L_H_min = (Vin * DutyCycle_worst) / (Delta_IL_worst * FSW);
+            
+            const Cout_uF_min = (Iout_A * DutyCycle_worst) / (FSW * VRIPPLE_MAX_V) * 1e6;
+            const Cout_uF_max = (Iout_A * DutyCycle_worst) / (FSW * VRIPPLE_MIN_V) * 1e6;
+
+            // --- Display Results ---
+            elements.errorContainer.style.display = 'none';
+            elements.resultsContainer.style.display = 'grid';
+            
+            elements.poutValue.textContent = Pout.toFixed(2);
+            elements.pinValue.textContent = `${Pin_min.toFixed(2)} - ${Pin_max.toFixed(2)}`;
+            elements.lossValue.textContent = `${Loss_min.toFixed(2)} - ${Loss_max.toFixed(2)}`;
+            
+            elements.r1Exact.textContent = R1.toFixed(2);
+            elements.r1Rec.textContent = findNearestStandardValue(R1, E24_SERIES);
+            
+            elements.lExact.textContent = `${(L_H_min*1e6).toFixed(2)} - ${(L_H_max*1e6).toFixed(2)}`;
+            elements.lRec.textContent = findNearestStandardValue((L_H_max*1e6), E24_SERIES); // Recommend for the higher value (lower ripple)
+            
+            elements.coutExact.textContent = `${Cout_uF_min.toFixed(2)} - ${Cout_uF_max.toFixed(2)}`;
+            elements.coutRec.textContent = findNextStandardCapValue(Cout_uF_max, CAP_E_SERIES); // Recommend for the higher value (lower ripple)
+
+            elements.ipkDetail.textContent = `${Ipk_best.toFixed(2)} - ${Ipk_worst.toFixed(2)}`;
+            elements.isatRec.textContent = (Ipk_worst * 1.25).toFixed(2);
+            
+            elements.cinVoltRec.textContent = findNextStandardVoltage(Vin * 1.5);
+            elements.coutVoltRec.textContent = findNextStandardVoltage(Vout * 1.25);
+            elements.diodeVoltRec.textContent = findNextStandardVoltage(Vout * 1.25);
+            elements.diodeCurrRec.textContent = (Iin_avg_worst * 1.5).toFixed(2);
+        }
+
+        const allInputs = Object.values(elements).filter(el => el.tagName === 'INPUT');
+        allInputs.forEach(input => input.addEventListener('input', calculateAll));
+        
+        calculateAll();
+    });
+    </script>
+</body>
+</html>
