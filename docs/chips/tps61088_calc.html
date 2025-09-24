@@ -6,105 +6,66 @@
     <title>TPS61088 参数计算器</title>
     <style>
         :root {
-            --primary-color: #0056b3;
-            --danger-color: #dc3545;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --light-gray: #f8f9fa;
-            --medium-gray: #e9ecef;
-            --dark-gray: #495057;
-            --border-color: #ced4da;
-            --error-bg-color: #f8d7da;
+            --primary-color: #0056b3; --danger-color: #dc3545; --success-color: #28a745;
+            --warning-color: #ffc107; --light-gray: #f8f9fa; --medium-gray: #e9ecef;
+            --dark-gray: #495057; --border-color: #ced4da; --error-bg-color: #f8d7da;
         }
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6; color: #343a40; background-color: var(--light-gray); margin: 0; padding: 20px;
-        }
-        .container {
-            width: 95%; max-width: 1600px; margin: 0 auto; background: #fff; border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex;
-        }
-        .input-panel { flex: 1; min-width: 380px; padding: 30px; }
-        .output-panel { 
-            flex: 1.5; padding: 30px; background-color: #fcfdff; border-left: 1px solid var(--medium-gray);
-        }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #343a40; background-color: var(--light-gray); margin: 0; padding: 20px; }
+        .container { width: 95%; max-width: 1600px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex; }
+        .input-panel { flex: 1; min-width: 420px; padding: 30px; }
+        .output-panel { flex: 1.5; padding: 30px; background-color: #fcfdff; border-left: 1px solid var(--medium-gray); }
         h1, h2, h3 { color: var(--primary-color); }
         h1 { border-bottom: 2px solid var(--medium-gray); padding-bottom: 10px; margin-top: 0; }
         h3 { margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--medium-gray); padding-bottom: 8px;}
-        .input-group { margin-bottom: 20px; max-width: 380px; }
+        .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-gray); }
         .label-note { font-weight: normal; font-size: 0.8em; color: #6c757d; margin-left: 8px; }
         .input-wrapper { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 6px; }
-        .input-wrapper:focus-within {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-        }
+        .input-wrapper:focus-within { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
         .input-wrapper.input-error { border-color: var(--danger-color); }
         .input-wrapper.input-warning { border-color: var(--warning-color); }
-        .input-wrapper input {
-            flex-grow: 1; width: 100%; padding: 12px; border: none; background: transparent; font-size: 1.1em; outline: none;
-            -moz-appearance: textfield;
-        }
-        .input-wrapper .unit {
-            padding: 0 15px; font-weight: 500; color: var(--dark-gray); background-color: var(--medium-gray);
-            border-left: 1px solid var(--border-color); align-self: stretch; display: flex; align-items: center;
-        }
-        .inline-group { display: flex; gap: 10px; }
-        .inline-group .input-group { flex: 1; }
+        .input-wrapper input { flex-grow: 1; width: 100%; padding: 12px; border: none; background: transparent; font-size: 1.1em; outline: none; -moz-appearance: textfield; }
+        .input-wrapper input[readonly] { background-color: #f1f3f5; cursor: not-allowed; }
+        .input-wrapper .unit { padding: 0 15px; font-weight: 500; color: var(--dark-gray); background-color: var(--medium-gray); border-left: 1px solid var(--border-color); align-self: stretch; display: flex; align-items: center; }
+        .inline-group { display: flex; gap: 10px; align-items: flex-end; }
+        .inline-group .input-group { flex: 1; margin-bottom: 0; }
         .warning-text { font-size: 0.85em; color: #b97d0b; margin-top: 5px; display: none; }
-
         #results-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .result-card { background: #fff; padding: 15px 20px; border-radius: 8px; border: 1px solid var(--medium-gray); }
+        .result-card { background: #fff; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--medium-gray); }
         .result-card h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-color); font-size: 1.1em; }
         .result-card .main-value { font-size: 1.8em; font-weight: bold; color: var(--danger-color); margin-bottom: 10px; }
         .result-card .details { font-size: 0.9em; list-style: none; padding: 0; margin: 0; color: #555; }
         .result-card .details li { margin-bottom: 5px; }
         .result-card .details strong { color: var(--success-color); }
-        .error-message-container {
-            color: var(--danger-color); font-weight: bold; text-align: center; padding: 20px;
-            background-color: var(--error-bg-color); border-radius: 8px; display: none;
-        }
+        .error-message-container { color: var(--danger-color); font-weight: bold; text-align: center; padding: 20px; background-color: var(--error-bg-color); border-radius: 8px; display: none; }
         hr.divider { border: none; border-top: 1px dashed var(--border-color); margin: 10px 0; }
+        .small-note { font-size: 0.8em; color: #6c757d; }
         footer { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--medium-gray); color: #6c757d; font-size: 0.9em; }
-        @media (max-width: 900px) {
-            .container { flex-direction: column; } .input-panel { min-width: 0; }
-            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); }
-        }
+        @media (max-width: 900px) { .container { flex-direction: column; } .input-panel { min-width: 0; } .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="input-panel">
-            <h1>TPS61088 设计参数</h1>
-            <a href="https://oshwhub.com/catsimple/da-dan-qi" target="_blank" class="sub-link">
-                 <span style="font-size:0.8em;">TPS61088 PCB示例</span>
-            </a>
+            <h1>TPS61088 参数设计</h1>
+            <a href="https://oshwhub.com/catsimple/da-dan-qi" target="_blank" class="sub-link"><span style="font-size:0.8em;">TPS61088 PCB示例</span></a>
             <h3>核心参数</h3>
+            <div class="input-group"><label for="vin_min">输入电压范围 (Vin)<small class="label-note">2.7V - 12V</small></label><div class="inline-group"><div class="input-wrapper" id="vinMinWrapper"><input type="number" step="0.1" id="vin_min" value="3.3" placeholder="Min"><span class="unit">V</span></div><div class="input-wrapper" id="vinMaxWrapper"><input type="number" step="0.1" id="vin_max" value="4.2" placeholder="Max"><span class="unit">V</span></div></div></div>
+            <div class="inline-group">
+                <div class="input-group"><label for="vout">输出电压 (Vout)<small class="label-note">4.5V - 12.6V</small></label><div class="input-wrapper" id="voutWrapper"><input type="number" step="0.01" id="vout" value="9.0"><span class="unit">V</span></div></div>
+                <div class="input-group"><label for="iout">输出电流 (Iout)</label><div class="input-wrapper" id="ioutWrapper"><input type="number" step="0.1" id="iout" value="3.0"><span class="unit">A</span></div></div>
+            </div>
+            <h3>功能及环路设定</h3>
+            <div class="input-group"><label for="fsw">开关频率 (fsw)<small class="label-note">200kHz - 2.2MHz</small></label><div class="input-wrapper" id="fswWrapper"><input type="number" step="100" id="fsw" value="600"><span class="unit">kHz</span></div></div>
+            <div class="input-group"><label for="tss">软启动时间 (tss)<small class="label-note">根据负载调整</small></label><div class="input-wrapper" id="tssWrapper"><input type="number" step="0.5" id="tss" value="5.0"><span class="unit">ms</span></div><p class="warning-text" id="tssWarning">建议值在 0.5ms - 500ms 之间</p></div>
+            
             <div class="input-group">
-                 <label for="vin_min">输入电压范围 (Vin)<small class="label-note">2.7V - 12V</small></label>
+                <label>输出电容 ESR 计算</label>
                 <div class="inline-group">
-                    <div class="input-wrapper" id="vinMinWrapper"><input type="number" step="0.1" id="vin_min" value="3.3" placeholder="Min"><span class="unit">V</span></div>
-                    <div class="input-wrapper" id="vinMaxWrapper"><input type="number" step="0.1" id="vin_max" value="4.2" placeholder="Max"><span class="unit">V</span></div>
+                    <div class="input-group"><label for="esr_single" class="label-note">单颗ESR</label><div class="input-wrapper" id="esrSingleWrapper"><input type="number" step="0.1" id="esr_single" value="3.0"><span class="unit">mΩ</span></div></div>
+                    <div class="input-group"><label for="cout_count" class="label-note">并联数量</label><div class="input-wrapper" id="coutCountWrapper"><input type="number" step="1" id="cout_count" value="3"><span class="unit">颗</span></div></div>
+                    <div class="input-group"><label for="esr_total" class="label-note">总 ESR (自动)</label><div class="input-wrapper"><input type="number" id="esr_total" readonly><span class="unit">mΩ</span></div></div>
                 </div>
-            </div>
-            <div class="input-group">
-                <label for="vout">输出电压 (Vout)<small class="label-note">4.5V - 12.6V</small></label>
-                <div class="input-wrapper" id="voutWrapper"><input type="number" step="0.01" id="vout" value="5.0"><span class="unit">V</span></div>
-            </div>
-            <div class="input-group">
-                <label for="iout">输出电流 (Iout)</label>
-                <div class="input-wrapper" id="ioutWrapper"><input type="number" step="0.1" id="iout" value="2.0"><span class="unit">A</span></div>
-            </div>
-
-            <h3>功能设定</h3>
-            <div class="input-group">
-                <label for="fsw">开关频率 (fsw)<small class="label-note">200kHz - 2.2MHz</small></label>
-                <div class="input-wrapper" id="fswWrapper"><input type="number" step="100" id="fsw" value="600"><span class="unit">kHz</span></div>
-            </div>
-            <div class="input-group">
-                <label for="tss">软启动时间 (tss)<small class="label-note">根据负载调整</small></label>
-                <div class="input-wrapper" id="tssWrapper"><input type="number" step="0.5" id="tss" value="5.0"><span class="unit">ms</span></div>
-                <p class="warning-text" id="tssWarning">建议值在 0.5ms - 500ms 之间，可根据负载适当增加</p>
             </div>
         </div>
 
@@ -112,151 +73,58 @@
             <h1>计算结果</h1>
             <div class="error-message-container" id="errorContainer"><p id="errorMessage"></p></div>
             <div id="results-container">
-                <div class="result-card">
-                    <h3>反馈电阻 (R1/R2)</h3>
-                    <ul class="details">
-                         <li><b>E24 方案 (推荐):</b></li>
-                         <li>R1: <strong><span id="r1Value_e24"></span> kΩ</strong></li>
-                         <li>R2: <strong><span id="r2Value_e24"></span> kΩ</strong></li>
-                         <hr class="divider">
-                         <li><b>E96 方案 (高精度):</b></li>
-                         <li>R1: <strong><span id="r1Value_e96"></span> kΩ</strong></li>
-                         <li>R2: <strong><span id="r2Value_e96"></span> kΩ</strong></li>
-                    </ul>
-                </div>
-                <div class="result-card">
-                    <h3>输出电压精度分析</h3>
-                     <ul class="details">
-                         <li>目标电压: <strong><span id="voutTarget"></span> V</strong></li>
-                         <hr class="divider">
-                         <li>E24 方案电压: <strong><span id="voutActual_e24"></span> V</strong></li>
-                         <li>误差: <strong><span id="voutError_e24"></span></strong></li>
-                         <hr class="divider">
-                         <li>E96 方案电压: <strong><span id="voutActual_e96"></span> V</strong></li>
-                         <li>误差: <strong><span id="voutError_e96"></span></strong></li>
-                    </ul>
-                </div>
-                 <div class="result-card">
-                    <h3>电流限制电阻 (Rilim)</h3>
-                    <div class="main-value"><span id="rilimValue"></span> kΩ</div>
-                     <ul class="details">
-                        <li>推荐 Ilim: <strong><span id="ilimRec"></span> A</strong></li>
-                        <li><small>基于 ILpeak + 25% 裕量</small></li>
-                    </ul>
-                </div>
-                 <div class="result-card">
-                    <h3>功率电感 (L)</h3>
-                    <div class="main-value"><span id="lRec"></span> µH</div>
-                    <ul class="details">
-                        <li>实际峰值电流 (ILpeak): <strong><span id="ilpeakValue"></span> A</strong></li>
-                        <li>饱和电流 (Isat) 应<strong> >= <span id="isatRec"></span> A</strong></li>
-                    </ul>
-                </div>
-                 <div class="result-card">
-                    <h3>输出电容 (Cout)</h3>
-                    <div class="main-value">>=<span id="coutRec"></span> µF</div>
-                    <ul class="details">
-                        <li>最小计算值: <strong><span id="coutExact"></span> µF</strong></li>
-                         <li>耐压值应<strong> >= <span id="coutVoltRec"></span> V</strong></li>
-                    </ul>
-                </div>
-                <div class="result-card">
-                    <h3>软启动电容 (Css)</h3>
-                    <div class="main-value"><span id="cssValue"></span></div>
-                    <ul class="details">
-                        <li><small>连接于 SS 和 AGND 之间</small></li>
-                    </ul>
-                </div>
-                <div class="result-card">
-                    <h3>频率设定电阻 (Rfreq)</h3>
-                    <div class="main-value"><span id="rfreqValue"></span> kΩ</div>
-                    <ul class="details">
-                         <li>目标频率: <strong><span id="fswTarget"></span> kHz</strong></li>
-                         <li>实际频率: <strong><span id="fswActual"></span> kHz</strong></li>
-                    </ul>
-                </div>
-                <div class="result-card">
-                    <h3>输入电容 (Cin)</h3>
-                     <ul class="details">
-                         <li>推荐值: <strong>≥ 10 µF</strong></li>
-                         <li>耐压值应<strong> >= <span id="cinVoltRec"></span> V</strong></li>
-                         <li><small>推荐使用低 ESR 陶瓷电容</small></li>
-                    </ul>
-                </div>
-                 <div class="result-card">
-                    <h3>功率分析 <small>(效率 85-95%)</small></h3>
-                    <ul class="details">
-                         <li>输出功率 (Pout): <strong><span id="poutValue"></span> W</strong></li>
-                         <li>输入功率 (Pin): <strong><span id="pinValue"></span> W</strong></li>
-                         <li>系统损耗: <strong><span id="lossValue"></span> W</strong></li>
-                    </ul>
-                </div>
+                <div class="result-card"><h3>反馈电阻 (R1/R2)</h3><ul class="details"><li><b>E24 方案:</b></li><li>R1: <strong><span id="r1Value_e24"></span> kΩ</strong></li><li>R2: <strong><span id="r2Value_e24"></span> kΩ</strong></li><hr class="divider"><li><b>E96 方案 (高精度):</b></li><li>R1: <strong><span id="r1Value_e96"></span> kΩ</strong></li><li>R2: <strong><span id="r2Value_e96"></span> kΩ</strong></li></ul></div>
+                <div class="result-card"><h3>输出电压精度分析</h3><ul class="details"><li>目标电压: <strong><span id="voutTarget"></span> V</strong></li><hr class="divider"><li>E24 方案电压: <strong><span id="voutActual_e24"></span> V</strong></li><li>误差: <strong><span id="voutError_e24"></span></strong></li><hr class="divider"><li>E96 方案电压: <strong><span id="voutActual_e96"></span> V</strong></li><li>误差: <strong><span id="voutError_e96"></span></strong></li></ul></div>
+                <div class="result-card"><h3>补偿网络 (COMP)</h3><ul class="details"><li>Rcomp: <strong><span id="r5Value"></span> kΩ</strong></li><li>Ccomp: <strong><span id="c5Value"></span></strong></li><li>Ccomp2: <strong><span id="c8Value"></span></strong> <small id="c8Note" class="small-note"></small></li><hr class="divider"><li>推荐穿越频率 (fc): <strong><span id="fcRec"></span> kHz</strong></li><li><small>注意: 此为理论计算初始值，强烈建议使用WEBENCH等仿真并进行实际测试验证。</small></li></ul></div>
+                <div class="result-card"><h3>电流限制电阻 (Rilim)</h3><div class="main-value"><span id="rilimValue"></span> kΩ</div><ul class="details"><li>推荐 Ilim: <strong><span id="ilimRec"></span> A</strong></li><li><small>基于 ILpeak + 10% 裕量</small></li><li><small>连接于 ILIM 和 GND 之间</small></li></ul></div>
+                <div class="result-card"><h3>频率设定电阻 (Rfreq)</h3><div class="main-value"><span id="rfreqValue"></span> kΩ</div><ul class="details"><li>目标频率: <strong><span id="fswTarget"></span> kHz</strong></li><li>实际频率: <strong><span id="fswActual"></span> kHz</strong></li><li><small>连接于 FSW 和 SW 之间</small></li></ul></div>
+                <div class="result-card"><h3>功率电感 (L)</h3><div class="main-value"><span id="lRec"></span> µH</div><ul class="details"><li>实际峰值电流 (ILpeak): <strong><span id="ilpeakValue"></span> A</strong></li><li>饱和电流 (Isat) 应<strong> ≥ <span id="isatRec"></span> A</strong></li></ul></div>
+                <div class="result-card"><h3>软启动电容 (Css)</h3><div class="main-value"><span id="cssValue"></span></div><ul class="details"><li><small>连接于 SS 和 AGND 之间</small></li></ul></div>
+                <div class="result-card"><h3>输出电容 (Cout)</h3><div class="main-value">≥<span id="coutRec"></span> µF</div><ul class="details"><li>最小计算值: <strong><span id="coutExact"></span> µF</strong></li><li>耐压值应<strong> ≥ <span id="coutVoltRec"></span> V</strong></li></ul></div>
+               <!-- <div class="result-card"><h3>输入电容 (Cin)</h3><ul class="details"><li>推荐值: <strong>≥ 10 µF</strong></li><li>耐压值应<strong> ≥ <span id="cinVoltRec"></span> V</strong></li><li><small>推荐使用低 ESR 陶瓷电容</small></li></ul></div>-->
+                <div class="result-card"><h3>功率分析 <small>(效率 90-95%)</small></h3><ul class="details"><li>输出功率 (Pout): <strong><span id="poutValue"></span> W</strong></li><li>输入功率 (Pin): <strong><span id="pinValue"></span> W</strong></li><li>系统损耗: <strong><span id="lossValue"></span> W</strong></li></ul></div>
             </div>
         </div>
     </div>
     <footer>
-    <p>本计算器根据 TPS61088 技术手册制作。计算结果仅供参考，最终设计需经过实际测试验证</p>
-        <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24">
-                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
-            </svg>
-        </a>
+        <p>本计算器根据 TPS61088 技术手册制作。计算结果仅供参考，最终设计需经过实际测试验证</p>
+        <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg></a>
     </footer>
-
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const E24_VALUES = [10,11,12,13,15,16,18,20,22,24,27,30,33,36,39,43,47,51,56,62,68,75,82,91];
         const E24_KOHM = E24_VALUES.flatMap(val => [val, val*10, val*100]).filter(v => v >= 10 && v <= 10000).sort((a,b)=>a-b);
         const E96_VALUES = [100,102,105,107,110,113,115,118,121,124,127,130,133,137,140,143,147,150,154,158,162,165,169,174,178,182,187,191,196,200,205,210,215,221,226,232,237,243,249,255,261,267,274,280,287,294,301,309,316,324,332,340,348,357,365,374,383,392,402,412,422,432,442,453,464,475,487,499,511,523,536,549,562,576,590,604,619,634,649,665,681,698,715,732,750,768,787,806,825,845,866,887,909,931,953,976];
         const E96_KOHM = E96_VALUES.flatMap(val => [val/10, val]).filter(v => v >= 10 && v <= 1000).sort((a,b)=>a-b);
-        const CAP_E_SERIES = [1.0, 1.5, 2.2, 3.3, 4.7, 6.8, 10, 15, 22, 33, 47, 68, 100, 220];
+        const CAP_E_SERIES_uF = [1.0, 1.5, 2.2, 3.3, 4.7, 6.8, 10, 15, 22, 33, 47, 68, 100, 220];
+        const CAP_E_SERIES_nF = [1.0, 1.5, 2.2, 3.3, 4.7, 6.8, 10, 15, 22, 33, 47, 68, 100, 150, 220, 330, 470, 680];
+        const CAP_E_SERIES_pF = [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82, 100, 120, 150, 180, 220, 270, 330, 390, 470, 560, 680, 820];
         const CAP_VOLTAGE_RATINGS = [6.3, 10, 16, 25, 35, 50];
-        const VFB = 1.204, MIN_ON_TIME = 90e-9;
-        const EFF_MIN = 0.85, EFF_MAX = 0.95;
-        const V_REF_SS = 1.204, I_SS = 5e-6;
-        const RIPPLE_FACTOR = 0.4;
-        
+        const VFB = 1.204, MIN_ON_TIME = 90e-9, EFF_MIN = 0.90, EFF_MAX = 0.95;
+        const V_REF_SS = 1.204, I_SS = 5e-6, RIPPLE_FACTOR = 0.4;
+        const RSENSE = 0.08, GEA = 190e-6; 
+
         const elements = {
-            vin_min: document.getElementById('vin_min'), vin_max: document.getElementById('vin_max'),
-            vout: document.getElementById('vout'), iout: document.getElementById('iout'),
-            fsw: document.getElementById('fsw'), tss: document.getElementById('tss'),
-            vinMinWrapper: document.getElementById('vinMinWrapper'),
-            voutWrapper: document.getElementById('voutWrapper'),
-            fswWrapper: document.getElementById('fswWrapper'),
-            tssWrapper: document.getElementById('tssWrapper'),
+            vin_min: document.getElementById('vin_min'), vin_max: document.getElementById('vin_max'), vout: document.getElementById('vout'), iout: document.getElementById('iout'),
+            fsw: document.getElementById('fsw'), tss: document.getElementById('tss'), esr_single: document.getElementById('esr_single'), cout_count: document.getElementById('cout_count'), esr_total: document.getElementById('esr_total'),
+            vinMinWrapper: document.getElementById('vinMinWrapper'), voutWrapper: document.getElementById('voutWrapper'), fswWrapper: document.getElementById('fswWrapper'), tssWrapper: document.getElementById('tssWrapper'),
             tssWarning: document.getElementById('tssWarning'),
-            poutValue: document.getElementById('poutValue'), pinValue: document.getElementById('pinValue'),
-            lossValue: document.getElementById('lossValue'),
-            r1Value_e24: document.getElementById('r1Value_e24'), r2Value_e24: document.getElementById('r2Value_e24'),
-            r1Value_e96: document.getElementById('r1Value_e96'), r2Value_e96: document.getElementById('r2Value_e96'),
-            voutTarget: document.getElementById('voutTarget'),
-            voutActual_e24: document.getElementById('voutActual_e24'), voutError_e24: document.getElementById('voutError_e24'),
+            poutValue: document.getElementById('poutValue'), pinValue: document.getElementById('pinValue'), lossValue: document.getElementById('lossValue'),
+            r1Value_e24: document.getElementById('r1Value_e24'), r2Value_e24: document.getElementById('r2Value_e24'), r1Value_e96: document.getElementById('r1Value_e96'), r2Value_e96: document.getElementById('r2Value_e96'),
+            voutTarget: document.getElementById('voutTarget'), voutActual_e24: document.getElementById('voutActual_e24'), voutError_e24: document.getElementById('voutError_e24'),
             voutActual_e96: document.getElementById('voutActual_e96'), voutError_e96: document.getElementById('voutError_e96'),
-            rfreqValue: document.getElementById('rfreqValue'),
-            fswTarget: document.getElementById('fswTarget'), fswActual: document.getElementById('fswActual'),
-            rilimValue: document.getElementById('rilimValue'),
-            ilimRec: document.getElementById('ilimRec'),
-            cssValue: document.getElementById('cssValue'),
-            lRec: document.getElementById('lRec'), ilpeakValue: document.getElementById('ilpeakValue'),
-            isatRec: document.getElementById('isatRec'),
+            rfreqValue: document.getElementById('rfreqValue'), fswTarget: document.getElementById('fswTarget'), fswActual: document.getElementById('fswActual'),
+            rilimValue: document.getElementById('rilimValue'), ilimRec: document.getElementById('ilimRec'), cssValue: document.getElementById('cssValue'),
+            lRec: document.getElementById('lRec'), ilpeakValue: document.getElementById('ilpeakValue'), isatRec: document.getElementById('isatRec'),
             coutRec: document.getElementById('coutRec'), coutExact: document.getElementById('coutExact'),
             cinVoltRec: document.getElementById('cinVoltRec'), coutVoltRec: document.getElementById('coutVoltRec'),
-            errorContainer: document.getElementById('errorContainer'), errorMessage: document.getElementById('errorMessage'),
-            resultsContainer: document.getElementById('results-container')
+            r5Value: document.getElementById('r5Value'), c5Value: document.getElementById('c5Value'), c8Value: document.getElementById('c8Value'), c8Note: document.getElementById('c8Note'), fcRec: document.getElementById('fcRec'),
+            errorContainer: document.getElementById('errorContainer'), errorMessage: document.getElementById('errorMessage'), resultsContainer: document.getElementById('results-container')
         };
-        
-        function findNearestStandardValue(value, series) {
-            return series.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
-        }
 
-        function findNextStandardValue(minValue, series) {
-            return series.find(val => val >= minValue) || series[series.length - 1];
-        }
-        
-        function findNextStandardVoltage(requiredVoltage) {
-            return CAP_VOLTAGE_RATINGS.find(rating => rating >= requiredVoltage) || CAP_VOLTAGE_RATINGS[CAP_VOLTAGE_RATINGS.length - 1];
-        }
-
+        function findNearestStandardValue(value, series) { return series.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev); }
+        function findNextStandardValue(minValue, series) { return series.find(val => val >= minValue) || series[series.length - 1]; }
+        function findNextStandardVoltage(requiredVoltage) { return CAP_VOLTAGE_RATINGS.find(rating => rating >= requiredVoltage) || CAP_VOLTAGE_RATINGS[CAP_VOLTAGE_RATINGS.length - 1]; }
         function findBestResistorPair(targetVout, vfb, r1Series, r2Candidates) {
             let bestPair = { r1: 0, r2: 0, vout: 0, error: Infinity };
             const targetRatio = targetVout / vfb - 1;
@@ -265,18 +133,23 @@
                 const r1 = findNearestStandardValue(idealR1, r1Series);
                 const actualVout = vfb * (1 + r1 / r2);
                 const error = Math.abs(actualVout - targetVout);
-                if (error < bestPair.error) {
-                    bestPair = { r1, r2, vout: actualVout, error };
-                }
+                if (error < bestPair.error) { bestPair = { r1, r2, vout: actualVout, error }; }
             }
             return bestPair;
         }
 
         function formatCapValue(value_nF) {
-            if (value_nF >= 1000) {
-                return (value_nF/1000).toFixed(2) + " µF";
-            }
+            if (value_nF >= 1000) return (value_nF/1000).toFixed(2) + " µF";
             return value_nF.toFixed(1) + " nF";
+        }
+        
+        function formatDetailedCap(value_F) {
+            const value_pF = value_F * 1e12;
+            if (value_pF < 1000) return findNextStandardValue(value_pF, CAP_E_SERIES_pF) + " pF";
+            const value_nF = value_F * 1e9;
+            if (value_nF < 1000) return findNextStandardValue(value_nF, CAP_E_SERIES_nF) + " nF";
+            const value_uF = value_F * 1e6;
+            return findNextStandardValue(value_uF, CAP_E_SERIES_uF) + " µF";
         }
 
         function showError(wrapper, message) {
@@ -288,7 +161,7 @@
 
         function calculate() {
             Object.values(elements).forEach(el => {
-                if (el.classList && (el.classList.contains('input-wrapper') || el.classList.contains('warning-text'))) {
+                if (el && el.classList && (el.classList.contains('input-wrapper') || el.classList.contains('warning-text'))) {
                     el.classList.remove('input-error', 'input-warning');
                     if(el.classList.contains('warning-text')) el.style.display = 'none';
                 }
@@ -300,69 +173,69 @@
             const Iout = parseFloat(elements.iout.value) || 0;
             const Fsw_kHz = parseFloat(elements.fsw.value) || 0;
             const Tss_ms = parseFloat(elements.tss.value) || 0;
+            const Esr_single_mOhm = parseFloat(elements.esr_single.value) || 0;
+            const Cout_count = parseInt(elements.cout_count.value) || 1;
+            
+            const Esr_total_mOhm = Esr_single_mOhm / Cout_count;
+            elements.esr_total.value = Esr_total_mOhm.toFixed(2);
             
             const Fsw_Hz = Fsw_kHz * 1000;
             const Tss_s = Tss_ms / 1000;
-
-            if ([Vin_min, Vin_max, Vout_target, Iout, Fsw_Hz, Tss_s].some(v => v <= 0)) {
+            const RESR = Esr_total_mOhm / 1000;
+            
+            if ([Vin_min, Vin_max, Vout_target, Iout, Fsw_Hz, Tss_s, Esr_single_mOhm].some(v => v <= 0) || Cout_count <= 0) {
                 elements.resultsContainer.style.display = 'none';
                 elements.errorContainer.style.display = 'none';
                 return;
             }
 
-            if (Tss_ms < 0.5 || Tss_ms > 500) {
-                elements.tssWrapper.classList.add('input-warning');
-                elements.tssWarning.style.display = 'block';
-            }
+            if (Tss_ms < 0.5 || Tss_ms > 500) { elements.tssWrapper.classList.add('input-warning'); elements.tssWarning.style.display = 'block'; }
             
-            const r2_e24_candidates = [43, 47, 51, 56, 62, 68];
-            const r2_e96_candidates = E96_KOHM.filter(r => r >= 40.2 && r <= 75);
-            
-            const bestResPair_e24 = findBestResistorPair(Vout_target, VFB, E24_KOHM, r2_e24_candidates);
-            const bestResPair_e96 = findBestResistorPair(Vout_target, VFB, E96_KOHM, r2_e96_candidates);
+            const bestResPair_e24 = findBestResistorPair(Vout_target, VFB, E24_KOHM, [43, 47, 51, 56, 62, 68]);
+            const bestResPair_e96 = findBestResistorPair(Vout_target, VFB, E96_KOHM, E96_KOHM.filter(r => r >= 40.2 && r <= 75));
             const Vout = bestResPair_e24.vout;
 
-            if (Vin_min < 2.7 || Vin_max > 12) { return showError(elements.vinMinWrapper, `设计错误：输入电压必须在 2.7V 到 12V 范围内！`); }
-            if (Vout_target < 4.5 || Vout_target > 12.6) { return showError(elements.voutWrapper, `设计错误：输出电压必须在 4.5V 到 12.6V 之间！`); }
-            if (Vout <= Vin_max) { return showError(elements.voutWrapper, "设计错误：输出电压 (Vout) 必须高于最高输入电压 (Vin_max)！"); }
-            if (Fsw_kHz < 200 || Fsw_kHz > 2200) { return showError(elements.fswWrapper, `设计错误：开关频率必须在 200kHz 到 2.2MHz 之间！`); }
+            if (Vin_min < 2.7 || Vin_max > 12) return showError(elements.vinMinWrapper, `设计错误：输入电压必须在 2.7V 到 12V 范围内！`);
+            if (Vout_target < 4.5 || Vout_target > 12.6) return showError(elements.voutWrapper, `设计错误：输出电压必须在 4.5V 到 12.6V 之间！`);
+            if (Vout <= Vin_max) return showError(elements.voutWrapper, "设计错误：输出电压 (Vout) 必须高于最高输入电压 (Vin_max)！");
+            if (Fsw_kHz < 200 || Fsw_kHz > 2200) return showError(elements.fswWrapper, `设计错误：开关频率必须在 200kHz 到 2.2MHz 之间！`);
             
             const DutyCycle = (Vout - Vin_min) / Vout;
-            const Ton = DutyCycle / Fsw_Hz;
-            if (Ton < MIN_ON_TIME) { return showError(elements.vinMinWrapper, `设计错误：在最低输入电压时，压差过小！<br>所需导通时间 (${(Ton * 1e9).toFixed(1)}ns) 小于芯片最小限制 (${(MIN_ON_TIME * 1e9).toFixed(0)}ns)。请增大压差。`); }
+            if (DutyCycle / Fsw_Hz < MIN_ON_TIME) return showError(elements.vinMinWrapper, `设计错误：在最低输入电压时压差过小，导致所需导通时间小于芯片最小限制 (${(MIN_ON_TIME * 1e9).toFixed(0)}ns)`);
             
             const IDC = (Vout * Iout) / (Vin_min * EFF_MIN);
-            const Ipp = IDC * RIPPLE_FACTOR;
-            const L_H = Vin_min * (Vout - Vin_min) / (Ipp * Fsw_Hz * Vout);
-            const L_uH_rec = findNextStandardValue(L_H * 1e6, [0.47, 1.0, 1.2, 1.5, 2.2, 3.3, 4.7, 6.8, 10]);
+            const L_H_calc = Vin_min * (Vout - Vin_min) / (IDC * RIPPLE_FACTOR * Fsw_Hz * Vout);
+            const L_uH_rec = findNextStandardValue(L_H_calc * 1e6, [0.47, 1.0, 1.2, 1.5, 2.2, 3.3, 4.7, 6.8, 10]);
+            const L_H = L_uH_rec * 1e-6;
             
-            const Ipp_actual = Vin_min * (Vout - Vin_min) / (L_uH_rec * 1e-6 * Fsw_Hz * Vout);
+            const Ipp_actual = Vin_min * (Vout - Vin_min) / (L_H * Fsw_Hz * Vout);
             const ILpeak = IDC + Ipp_actual / 2;
+            const Ilim_rec = ILpeak * 1.1;
             
-            const Ilim_rec = ILpeak * 1.25;
-            
-            if (Ilim_rec > 13) { 
-                 return showError(null, `设计致命错误：推荐的电流限制 (${Ilim_rec.toFixed(2)}A) 超出了芯片的最大能力 (约13A)！<br>请大幅降低输出功率或提高最低输入电压。`);
-            }
+            if (Ilim_rec > 13.5) return showError(null, `设计致命错误：推荐的电流限制 (${Ilim_rec.toFixed(2)}A) 超出了芯片的最大能力 (约13A)！<br>请大幅降低输出功率或提高最低输入电压。`);
             
             const Pout = Vout * Iout;
-            const Pin_min = Pout / EFF_MAX;
-            const Pin_max = Pout / EFF_MIN;
-            const Loss_min = Pin_min - Pout;
-            const Loss_max = Pin_max - Pout;
+            const Pin_min = Pout / EFF_MAX, Pin_max = Pout / EFF_MIN;
+            const Loss_min = Pin_min - Pout, Loss_max = Pin_max - Pout;
             
-            const CFREQ_pF = 23, DELAY_ns = 89;
-            const Rfreq_kOhm_calc = (4 * (1/Fsw_Hz - DELAY_ns * 1e-9) * (Vout/Vin_min)) / (CFREQ_pF * 1e-12) / 1000;
+            const Rfreq_kOhm_calc = (4 * (1/Fsw_Hz - 89e-9) * (Vout/Vin_min)) / (23e-12) / 1000;
             const Rfreq_kOhm_rec = findNearestStandardValue(Rfreq_kOhm_calc, E24_KOHM);
-            const Fsw_actual_Hz = 1 / ( (Rfreq_kOhm_rec * 1000 * CFREQ_pF * 1e-12) / (4 * Vout/Vin_min) + (DELAY_ns*1e-9) );
+            const Fsw_actual_Hz = 1 / ( (Rfreq_kOhm_rec * 1000 * 23e-12) / (4 * Vout/Vin_min) + 89e-9 );
             
             const Rilim_kOhm = 1190000 / Ilim_rec / 1000;
             const Css_F = (Tss_s * I_SS) / V_REF_SS;
-            const Css_nF = Css_F * 1e9;
             
-            const Vripple_V = Vout * 0.01;
-            const Cout_F = Iout * (Vout - Vin_min) / (Fsw_Hz * Vout * Vripple_V);
-            const Cout_uF = Cout_F * 1e6;
+            const Cout_F_calc = Iout * (Vout - Vin_min) / (Fsw_Hz * Vout * (Vout * 0.01));
+            const Cout_uF_rec = findNextStandardValue(Cout_F_calc * 1e6, CAP_E_SERIES_uF);
+            const Co_F = Cout_uF_rec * 1e-6;
+
+            const Ro = Vout / Iout;
+            const RHPZ_Hz = (Ro * Math.pow(1 - DutyCycle, 2)) / (2 * Math.PI * L_H);
+            const Fc_Hz = Math.min(Fsw_Hz / 10, RHPZ_Hz / 5);
+            
+            const R5_Ohm = (2 * Math.PI * Vout * RSENSE * Fc_Hz * Co_F) / ((1 - DutyCycle) * VFB * GEA);
+            const C5_F = (Ro * Co_F) / (2 * R5_Ohm);
+            const C8_F = (RESR * Co_F) / R5_Ohm;
             
             elements.errorContainer.style.display = 'none';
             elements.resultsContainer.style.display = 'grid';
@@ -370,44 +243,46 @@
             elements.poutValue.textContent = Pout.toFixed(2);
             elements.pinValue.textContent = `${Pin_min.toFixed(2)} - ${Pin_max.toFixed(2)}`;
             elements.lossValue.textContent = `${Loss_min.toFixed(2)} - ${Loss_max.toFixed(2)}`;
-
-            elements.r1Value_e24.textContent = bestResPair_e24.r1;
-            elements.r2Value_e24.textContent = bestResPair_e24.r2;
-            elements.r1Value_e96.textContent = bestResPair_e96.r1;
-            elements.r2Value_e96.textContent = bestResPair_e96.r2;
-
+            elements.r1Value_e24.textContent = bestResPair_e24.r1; elements.r2Value_e24.textContent = bestResPair_e24.r2;
+            elements.r1Value_e96.textContent = bestResPair_e96.r1; elements.r2Value_e96.textContent = bestResPair_e96.r2;
             elements.voutTarget.textContent = Vout_target.toFixed(3);
             elements.voutActual_e24.textContent = bestResPair_e24.vout.toFixed(3);
-            let error_mV = (bestResPair_e24.error * 1000).toFixed(1);
-            let error_percent = (bestResPair_e24.error / Vout_target * 100).toFixed(2);
-            elements.voutError_e24.textContent = `${error_mV}mV (${error_percent}%)`;
-            
+            elements.voutError_e24.textContent = `${(bestResPair_e24.error * 1000).toFixed(1)}mV (${(bestResPair_e24.error / Vout_target * 100).toFixed(2)}%)`;
             elements.voutActual_e96.textContent = bestResPair_e96.vout.toFixed(3);
-            error_mV = (bestResPair_e96.error * 1000).toFixed(1);
-            error_percent = (bestResPair_e96.error / Vout_target * 100).toFixed(2);
-            elements.voutError_e96.textContent = `${error_mV}mV (${error_percent}%)`;
-            
+            elements.voutError_e96.textContent = `${(bestResPair_e96.error * 1000).toFixed(1)}mV (${(bestResPair_e96.error / Vout_target * 100).toFixed(2)}%)`;
             elements.rfreqValue.textContent = Rfreq_kOhm_rec;
             elements.fswTarget.textContent = Fsw_kHz;
             elements.fswActual.textContent = (Fsw_actual_Hz / 1000).toFixed(1);
-            
             elements.rilimValue.textContent = findNearestStandardValue(Rilim_kOhm, E24_KOHM);
             elements.ilimRec.textContent = Ilim_rec.toFixed(2);
-            
-            elements.cssValue.textContent = formatCapValue(Css_nF);
+            elements.cssValue.textContent = formatCapValue(Css_F * 1e9);
             elements.lRec.textContent = L_uH_rec;
             elements.ilpeakValue.textContent = ILpeak.toFixed(2);
-            elements.isatRec.textContent = (ILpeak * 1.3).toFixed(2); 
+            elements.isatRec.textContent = (ILpeak * 1.3).toFixed(2);
+            elements.coutExact.textContent = (Cout_F_calc * 1e6).toFixed(2);
+            elements.coutRec.textContent = Cout_uF_rec;
+           <!-- elements.cinVoltRec.textContent = findNextStandardVoltage(Vin_max * 1.5); -->
+            elements.coutVoltRec.textContent = findNextStandardVoltage(Vout * 1.25);
 
-            elements.coutExact.textContent = Cout_uF.toFixed(2);
-            elements.coutRec.textContent = findNextStandardValue(Cout_uF, CAP_E_SERIES);
-            
-            elements.cinVoltRec.textContent = findNextStandardValue(Vin_max * 1.5, CAP_VOLTAGE_RATINGS);
-            elements.coutVoltRec.textContent = findNextStandardValue(Vout * 1.25, CAP_VOLTAGE_RATINGS);
+            elements.fcRec.textContent = (Fc_Hz / 1000).toFixed(1);
+            elements.r5Value.textContent = findNearestStandardValue(R5_Ohm / 1000, E24_KOHM);
+            elements.c5Value.textContent = formatDetailedCap(C5_F);
+            const C8_pF = C8_F * 1e12;
+            if (C8_pF < 10) {
+                elements.c8Value.textContent = "N/A";
+                elements.c8Note.textContent = "(< 10pF, 可悬空)";
+            } else {
+                elements.c8Value.textContent = formatDetailedCap(C8_F);
+                elements.c8Note.textContent = "";
+            }
         }
 
-        const allInputs = Object.values(elements).filter(el => el.tagName === 'INPUT');
-        allInputs.forEach(input => input.addEventListener('input', calculate));
+        const allInputs = Object.values(elements).filter(el => el && el.tagName === 'INPUT');
+        allInputs.forEach(input => {
+            if (!input.readOnly) {
+                input.addEventListener('input', calculate);
+            }
+        });
         
         calculate();
     });
