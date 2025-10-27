@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silergy SY808x 参数计算器</title>
+    <style>
+        :root {
+            --primary-color: #004EA2; 
+            --label-color: #4A90E2;   
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --border-color: #ced4da;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: #343a40;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 95%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+        }
+        .input-panel {
+            flex: 1;
+            min-width: 300px;
+            padding: 30px;
+        }
+        .output-panel {
+            flex: 2;
+            padding: 30px;
+            background-color: #fcfdff;
+            border-left: 1px solid var(--medium-gray);
+        }
+        h1, h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            max-width: 350px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-gray);
+        }
+        .input-wrapper, .select-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrapper:focus-within, .select-wrapper:focus-within {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .input-wrapper.input-error, .select-wrapper.input-error {
+            border-color: var(--danger-color);
+        }
+        .input-wrapper input, .select-wrapper select {
+            flex-grow: 1;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-size: 1.1em;
+            outline: none;
+            appearance: none;
+        }
+        select {
+            cursor: pointer;
+        }
+        .input-wrapper .unit {
+            padding: 0 15px;
+            font-weight: 500;
+            color: var(--dark-gray);
+            background-color: var(--medium-gray);
+            border-left: 1px solid var(--border-color);
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+        }
+        .warning-text {
+            font-size: 0.85em;
+            color: var(--danger-color);
+            margin-top: 5px;
+            display: none;
+        }
+        #results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .result-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--medium-gray);
+            display: flex;
+            flex-direction: column;
+        }
+        .result-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-size: 1.2em;
+        }
+        .result-card .main-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .result-card .details {
+            font-size: 0.95em;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: #555;
+            flex-grow: 1;
+        }
+        .result-card .details li {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .result-card .details .label {
+            color: var(--label-color);
+            font-weight: 600;
+            padding-right: 10px;
+        }
+        .result-card .details .value {
+            font-weight: bold;
+            text-align: right;
+        }
+        .feature-value {
+            color: var(--info-color);
+            font-weight: bold;
+        }
+        .message-box {
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .error-message {
+            color: var(--danger-color);
+            background-color: #f8d7da;
+        }
+        .warning-message {
+            color: #856404;
+            background-color: #fff3cd;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--medium-gray);
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 992px) {
+            body { padding: 10px; }
+            .container { flex-direction: column; width: 100%; box-shadow: none; }
+            .input-panel { min-width: 0; padding: 20px; }
+            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); padding: 20px; }
+            .input-group { max-width: none; }
+            h1 { font-size: 1.5em; }
+            .result-card .main-value { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Input Panel -->
+        <div class="input-panel">
+            <h1 id="main-title">矽力杰 SY808x 设计参数</h1>
+            <div class="input-group">
+                <label for="chipModel">选择芯片型号</label>
+                <div class="select-wrapper">
+                    <select id="chipModel">
+                        <option value="SY8088">SY8088 (1A, 1.5MHz)</option>
+                        <option value="SY8088I">SY8088I (1A, 1.5MHz)</option>
+                        <option value="SY8089">SY8089 (2A, 1MHz)</option>
+                        <option value="SY8089A">SY8089A (2A, 1MHz)</option>
+                        <option value="SY8089I" selected>SY8089I (2A, 1.5MHz)</option>
+                        <option value="SY8089A1">SY8089A1 (2A, 1.5MHz)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="inputVoltage">输入电压 (Vin)</label>
+                <div class="input-wrapper" id="vinWrapper">
+                    <input type="number" id="inputVoltage" value="5" step="0.1">
+                    <span class="unit">V</span>
+                </div>
+                <p class="warning-text" id="vinWarning"></p>
+            </div>
+            <div class="input-group">
+                <label for="outputVoltage">输出电压 (Vout)</label>
+                <div class="input-wrapper" id="voutWrapper">
+                    <input type="number" id="outputVoltage" value="2.6" step="0.1">
+                    <span class="unit">V</span>
+                </div>
+                 <p class="warning-text" id="voutWarning"></p>
+            </div>
+            <div class="input-group">
+                <label for="outputCurrent">输出电流 (Iout)</label>
+                <div class="input-wrapper" id="currentWrapper">
+                    <input type="number" id="outputCurrent" value="1" step="0.1">
+                    <span class="unit">A</span>
+                </div>
+                <p class="warning-text" id="currentWarning"></p>
+            </div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="output-panel">
+            <h1>计算结果 & 芯片特性</h1>
+            <div id="results-container">
+                <div class="result-card">
+                    <h3>反馈电阻 (FB)</h3>
+                    <div class="main-value"><span id="resistorMainValue"></span></div>
+                    <ul class="details">
+                        <li><span class="label">RH (高边):</span> <span class="value" id="resistorHighValue"></span></li>
+                        <li><span class="label">RL (低边):</span> <span class="value" id="resistorLowValue"></span></li>
+                        <li><span class="label">RL 精确计算值:</span> <span class="value" id="resistorCalcValue"></span></li>
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>功率电感 (L)</h3>
+                    <div class="main-value"><span id="lRec"></span></div>
+                    <ul class="details">
+                        <li><span class="label">纹波电流 (ΔIL):</span> <span class="value" id="ilResult"></span></li>
+                        <li><span class="label">峰值电流 (Ipk):</span> <span class="value" id="ipkResult"></span></li>
+                        <li><span class="label">饱和电流 (Isat) ≥</span> <strong class="value" id="isatRec"></strong></li>
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>芯片关键特性</h3>
+                    <ul class="details">
+                        <li><span class="label">保护模式:</span> <span class="feature-value value" id="protectionMode"></span></li>
+                        <li><span class="label">输出放电:</span> <span class="feature-value value" id="dischargeFunc"></span></li>
+                        <li><span class="label">静态电流 (Iq):</span> <span class="feature-value value" id="quiescentCurrent"></span></li>
+                        <li><span class="label">开关频率:</span> <span class="feature-value value" id="fswDisplay"></span></li>
+                        <li><span class="label">上/下管内阻:</span> <span class="feature-value value" id="rdsOn"></span></li>
+                    </ul>
+                </div>
+                 <div class="result-card">
+                    <h3>外围电容</h3>
+                     <ul class="details">
+                         <li><span class="label">输入电容 (Cin):</span> <span class="value">≥ 10µF</span></li>
+                         <li><span class="label">Cin 耐压 ≥</span> <strong class="value" id="cinVoltRec"></strong></li>
+                         <li><span class="label">输出电容 (Cout):</span> <span class="value">≥ 22µF</span></li>
+                         <li><span class="label">Cout 耐压 ≥</span> <strong class="value" id="coutVoltRec"></strong></li>
+                         <li><span class="label">前馈电容 (Cff):</span> <span class="value">22pF (推荐)</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="message-container"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>本计算器基于矽力杰(Silergy) SY808x/89x系列数据手册。计算结果仅供参考，最终设计需经过实际测试验证。</p>
+         <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
+            </svg>
+        </a>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const CHIP_SPECS = {
+                'SY8088':   { brand: 'silergy', vin_min: 2.5, vin_max: 5.5, iout_max: 1.0, fsw_mhz: 1.5, vfb_ref: 0.6, ton_min_ns: 80, protection: '打嗝模式', discharge: '无', iq: '40 µA', rds_on: '260/170 mΩ' },
+                'SY8088I':  { brand: 'silergy', vin_min: 2.5, vin_max: 5.5, iout_max: 1.0, fsw_mhz: 1.5, vfb_ref: 0.6, ton_min_ns: 60, protection: '打嗝模式', discharge: '有', iq: '50 µA', rds_on: '260/160 mΩ' },
+                'SY8089':   { brand: 'silergy', vin_min: 2.7, vin_max: 5.5, iout_max: 2.0, fsw_mhz: 1.0, vfb_ref: 0.6, ton_min_ns: 75, protection: '锁存关断', discharge: '有', iq: '55 µA', rds_on: '110/80 mΩ' },
+                'SY8089A':  { brand: 'silergy', vin_min: 2.7, vin_max: 5.5, iout_max: 2.0, fsw_mhz: 1.0, vfb_ref: 0.6, ton_min_ns: 75, protection: '打嗝模式', discharge: '无', iq: '55 µA', rds_on: '110/80 mΩ' },
+                'SY8089I':  { brand: 'silergy', vin_min: 2.5, vin_max: 5.5, iout_max: 2.0, fsw_mhz: 1.5, vfb_ref: 0.6, ton_min_ns: 60, protection: '锁存关断', discharge: '有', iq: '50 µA', rds_on: '130/85 mΩ' },
+                'SY8089A1': { brand: 'silergy', vin_min: 2.5, vin_max: 5.5, iout_max: 2.0, fsw_mhz: 1.5, vfb_ref: 0.6, ton_min_ns: 60, protection: '打嗝模式', discharge: '有', iq: '50 µA', rds_on: '130/85 mΩ' }
+            };
+
+            const E96_SERIES = [100, 102, 105, 107, 110, 113, 115, 118, 121, 124, 127, 130, 133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169, 174, 178, 182, 187, 191, 196, 200, 205, 210, 215, 221, 226, 232, 237, 243, 249, 255, 261, 267, 274, 280, 287, 294, 301, 309, 316, 324, 332, 340, 348, 357, 365, 374, 383, 392, 402, 412, 422, 432, 442, 453, 464, 475, 487, 499, 511, 523, 536, 549, 562, 576, 590, 604, 619, 634, 649, 665, 681, 698, 715, 732, 750, 768, 787, 806, 825, 845, 866, 887, 909, 931, 953, 976];
+            const CAP_VOLTAGE_RATINGS = [6.3, 10, 16, 25, 35, 50];
+            const allInputs = document.querySelectorAll('input[type="number"], select');
+
+            function round(value, decimals) {
+                if (typeof value !== 'number' || !isFinite(value)) return value;
+                return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+            }
+
+            function findNearestStandardValue(value, series) {
+                if (value <= 0) return 0;
+                const valueScaled = value / Math.pow(10, Math.floor(Math.log10(value)));
+                const closestRaw = series.reduce((prev, curr) => 
+                    (Math.abs(curr / 100 - valueScaled) < Math.abs(prev / 100 - valueScaled) ? curr : prev)
+                );
+                const result = (closestRaw / 100) * Math.pow(10, Math.floor(Math.log10(value)));
+                return round(result, 3); // Round the final standard value
+            }
+            
+            function findNextStandardVoltage(requiredVoltage) {
+                return CAP_VOLTAGE_RATINGS.find(rating => rating >= requiredVoltage) || CAP_VOLTAGE_RATINGS[CAP_VOLTAGE_RATINGS.length - 1];
+            }
+
+            function validateAndCalculate() {
+                const elements = {
+                    chip:  { input: document.getElementById('chipModel') },
+                    vin:   { input: document.getElementById('inputVoltage'), wrapper: document.getElementById('vinWrapper'), warning: document.getElementById('vinWarning') },
+                    vout:  { input: document.getElementById('outputVoltage'), wrapper: document.getElementById('voutWrapper'), warning: document.getElementById('voutWarning') },
+                    iout:  { input: document.getElementById('outputCurrent'), wrapper: document.getElementById('currentWrapper'), warning: document.getElementById('currentWarning') },
+                };
+                const resultsContainer = document.getElementById('results-container');
+                const messageContainer = document.getElementById('message-container');
+
+                const selectedChip = elements.chip.input.value;
+                const specs = CHIP_SPECS[selectedChip];
+                
+                const Vin = parseFloat(elements.vin.input.value) || 0;
+                const Vout = parseFloat(elements.vout.input.value) || 0;
+                const Iout = parseFloat(elements.iout.input.value) || 0;
+
+                let isValid = true;
+                let errorMsg = "";
+                let warningMsg = "";
+
+                elements.vin.warning.textContent = `输入范围: ${specs.vin_min}V ~ ${specs.vin_max}V`;
+                elements.iout.warning.textContent = `最大电流: ${specs.iout_max}A`;
+                elements.vout.warning.textContent = `最小输出电压: ${specs.vfb_ref}V`;
+
+                Object.values(elements).forEach(el => {
+                    if (el.wrapper) el.wrapper.classList.remove('input-error');
+                    if (el.warning) el.warning.style.display = 'none';
+                });
+                messageContainer.innerHTML = '';
+
+                if (Vin < specs.vin_min || Vin > specs.vin_max) {
+                    elements.vin.warning.style.display = 'block';
+                    isValid = false;
+                    errorMsg = `输入电压超出所选芯片 (${selectedChip}) 的工作范围。`;
+                }
+                
+                if (Iout < 0 || Iout > specs.iout_max) {
+                    elements.iout.warning.style.display = 'block';
+                    if(isValid) { isValid = false; errorMsg = `输出电流超出所选芯片 (${selectedChip}) 的最大能力。`; }
+                }
+
+                if (Vout < specs.vfb_ref && Vout > 0) {
+                     elements.vout.warning.style.display = 'block';
+                     if(isValid) { isValid = false; errorMsg = `输出电压低于芯片的最低可调电压 (${specs.vfb_ref}V)。`; }
+                }
+                
+                if (Vout > Vin && isValid && Vout > 0) {
+                     elements.vout.warning.style.display = 'block';
+                     elements.vout.warning.textContent = '输出电压不能高于输入电压';
+                     if(isValid) { isValid = false; errorMsg = "错误：输出电压不能高于输入电压。"; }
+                }
+
+                if (Vout <= 0 && isValid) {
+                    elements.vout.warning.style.display = 'block';
+                    elements.vout.warning.textContent = '输出电压必须大于0';
+                    isValid = false;
+                    errorMsg = "错误：输出电压必须大于0。";
+                }
+
+                const rdsOnTop = parseFloat(specs.rds_on.split('/')[0]) / 1000;
+                const FSW_HZ = specs.fsw_mhz * 1000000;
+
+                if (isValid && Vout > 0) {
+                    const minVinForRegulation = Vout + Iout * rdsOnTop;
+                    if (Vin < minVinForRegulation) {
+                        warningMsg += `警告：输入电压 (${Vin}V) 过低，芯片将进入100%占空比（直通）模式。实际输出电压将低于设定的 ${Vout}V，约为 ${round(Vin - Iout * rdsOnTop, 2)}V。<br>`;
+                    }
+
+                    const requiredTon_ns = (Vout / (Vin * FSW_HZ)) * 1e9;
+                    if (requiredTon_ns < specs.ton_min_ns) {
+                         warningMsg += `警告：在此工况下(${Vin}V输入, ${Vout}V输出)，所需的导通时间 (${round(requiredTon_ns, 1)}ns) 小于芯片的最小导通时间 (${specs.ton_min_ns}ns)，可能导致输出不稳定或跳频。`;
+                    }
+                }
+
+                if (!isValid && errorMsg) {
+                    Object.values(elements).forEach(el => { if(el.wrapper) el.wrapper.classList.add('input-error'); });
+                    resultsContainer.style.display = 'none';
+                    messageContainer.innerHTML = `<div class="message-box error-message">${errorMsg}</div>`;
+                    return;
+                }
+                
+                resultsContainer.style.display = 'grid';
+                if (warningMsg) {
+                    messageContainer.innerHTML = `<div class="message-box warning-message">${warningMsg}</div>`;
+                }
+
+                // --- Calculation Stage ---
+                const VFB_REF = specs.vfb_ref;
+                let RH_KOHM_rec, RL_kOhm_calc, RL_k_rec;
+                
+                if (Vout < 1.5 && Vout > VFB_REF) {
+                    RH_KOHM_rec = 49.9;
+                } else {
+                    RH_KOHM_rec = 100;
+                }
+                RL_kOhm_calc = RH_KOHM_rec * VFB_REF / (Vout - VFB_REF);
+                RL_k_rec = findNearestStandardValue(RL_kOhm_calc * 1000, E96_SERIES) / 1000;
+                
+                document.getElementById('resistorHighValue').textContent = `${RH_KOHM_rec} kΩ`;
+                document.getElementById('resistorLowValue').textContent = `${RL_k_rec} kΩ`;
+                document.getElementById('resistorMainValue').textContent = `${RL_k_rec} kΩ`;
+                document.getElementById('resistorCalcValue').textContent = `${round(RL_kOhm_calc, 2)} kΩ`;
+
+                let L_uH_rec;
+                if (specs.iout_max <= 1.0) {
+                    L_uH_rec = 2.2;
+                } else if (Vout >= 3.3) {
+                     L_uH_rec = 2.2;
+                } else {
+                    L_uH_rec = (specs.fsw_mhz === 1.0) ? 2.2 : 1.0;
+                }
+                const L_H = L_uH_rec / 1000000;
+
+                const rippleCurrent = (Vout * (Vin - Vout)) / (Vin * L_H * FSW_HZ);
+                const peakCurrent = Iout + (rippleCurrent / 2);
+                const Isat_rec = parseFloat((peakCurrent * 1.3).toFixed(2));
+
+                const cin_volt_rec = findNextStandardVoltage(Vin);
+                const cout_volt_rec = findNextStandardVoltage(Vout * 1.25);
+
+                // --- Display Stage ---
+                document.getElementById('lRec').textContent = `${L_uH_rec} µH`;
+                document.getElementById('ilResult').textContent = rippleCurrent > 0 ? `${round(rippleCurrent, 3)} A` : "N/A";
+                document.getElementById('ipkResult').textContent = `${round(peakCurrent, 3)} A`;
+                document.getElementById('isatRec').textContent = `${round(Isat_rec, 2)} A`;
+                
+                document.getElementById('protectionMode').textContent = specs.protection;
+                document.getElementById('dischargeFunc').textContent = specs.discharge;
+                document.getElementById('quiescentCurrent').textContent = specs.iq;
+                document.getElementById('fswDisplay').textContent = `${specs.fsw_mhz} MHz`;
+                document.getElementById('rdsOn').textContent = specs.rds_on;
+
+                document.getElementById('cinVoltRec').textContent = `${cin_volt_rec} V`;
+                document.getElementById('coutVoltRec').textContent = `${cout_volt_rec} V`;
+            }
+            
+            allInputs.forEach(input => input.addEventListener('input', validateAndCalculate));
+            validateAndCalculate(); 
+        });
+    </script>
+</body>
+</html>
