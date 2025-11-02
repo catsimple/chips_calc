@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPS63020 参数计算器</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --border-color: #ced4da;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #343a40;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 95%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+        }
+        .input-panel {
+            flex: 1;
+            min-width: 300px;
+            padding: 30px;
+        }
+        .output-panel {
+            flex: 1.5;
+            padding: 30px;
+            background-color: #fcfdff;
+            border-left: 1px solid var(--medium-gray);
+        }
+        h1, h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            max-width: 350px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-gray);
+        }
+        .label-note {
+            font-weight: normal;
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrapper:focus-within {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .input-wrapper.input-error {
+            border-color: var(--danger-color);
+        }
+        .input-wrapper input {
+            flex-grow: 1;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-size: 1.1em;
+            outline: none;
+        }
+        .input-wrapper .unit {
+            padding: 0 15px;
+            font-weight: 500;
+            color: var(--dark-gray);
+            background-color: var(--medium-gray);
+            border-left: 1px solid var(--border-color);
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+        }
+        .warning-text {
+            font-size: 0.85em;
+            color: var(--danger-color);
+            margin-top: 5px;
+            display: none;
+        }
+        #results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        .result-card {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--medium-gray);
+            display: flex;
+            flex-direction: column;
+        }
+        .result-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+        .result-card .main-value {
+            font-size: 1.7em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .result-card .details {
+            font-size: 0.9em;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: #555;
+            flex-grow: 1;
+        }
+        .result-card .details li {
+            margin-bottom: 5px;
+        }
+        .result-card .details strong {
+            color: var(--primary-color);
+        }
+        /* New styles for FB results list */
+        #fb-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #fb-results-list li {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background-color: var(--light-gray);
+            font-size: 0.9em;
+            border: 1px solid var(--medium-gray);
+        }
+        #fb-results-list li:first-child {
+            border-left: 4px solid var(--success-color);
+        }
+        #fb-results-list .vout-result {
+            font-weight: bold;
+            color: var(--dark-gray);
+        }
+        #fb-results-list .error-result {
+            font-size: 0.9em;
+        }
+        .error-message {
+            color: var(--danger-color);
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8d7da;
+            border-radius: 8px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--medium-gray);
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { flex-direction: column; width: 100%; box-shadow: none; }
+            .input-panel { min-width: 0; padding: 20px; }
+            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); padding: 20px; }
+            .input-group { max-width: none; }
+            h1 { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Input Panel -->
+        <div class="input-panel">
+            <h1>TPS63020 智能计算器</h1>
+            <p style="font-size:0.9em; color:#555;">一款高效单电感升降压 (Buck-Boost) 转换器。</p>
+            <a href="https://oshwhub.com/catsimple/tos63020-xiao-ban" target="_blank" class="sub-link">
+                <span style="font-size:0.8em;">SY7200 PCB示例</span>
+            </a>
+            <p><p>
+            <div class="input-group">
+                <label for="inputVoltageMin">最小输入电压 (Vin_min)</label>
+                <div class="input-wrapper" id="vinMinWrapper">
+                    <input type="number" id="inputVoltageMin" value="2.5" step="0.1">
+                    <span class="unit">V</span>
+                </div>
+                <p class="warning-text" id="vinMinWarning">必须在 1.8V - 5.5V 范围内</p>
+            </div>
+            <div class="input-group">
+                <label for="outputVoltage">目标输出电压 (Vout)</label>
+                <div class="input-wrapper" id="voutWrapper">
+                    <input type="number" id="outputVoltage" value="3.3" step="0.1">
+                    <span class="unit">V</span>
+                </div>
+                 <p class="warning-text" id="voutWarning">推荐范围 1.2V - 5.5V</p>
+            </div>
+            <div class="input-group">
+                <label for="outputCurrent">最大输出电流 (Iout)</label>
+                <div class="input-wrapper" id="currentWrapper">
+                    <input type="number" id="outputCurrent" value="1.5" step="0.1">
+                    <span class="unit">A</span>
+                </div>
+                <p class="warning-text" id="currentWarning">请参考手册曲线确认电流能力</p>
+            </div>
+             <div class="input-group">
+                <label for="efficiency">预估效率 (η)</label>
+                <div class="input-wrapper">
+                    <input type="number" id="efficiency" value="90" min="50" max="98">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="output-panel">
+            <h1>计算结果</h1>
+            <div id="results-container">
+                <div class="result-card">
+                    <h3>VFB 反馈电阻</h3>
+                    <ul id="fb-results-list">
+                        <!-- JS will populate this -->
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>L (功率电感)</h3>
+                    <div class="main-value"><span id="lRec"></span> µH</div>
+                    <ul class="details">
+                        <li>模式: <strong><span id="opMode"></span></strong></li>
+                        <li>纹波电流 (Ilp-p): <span id="ilResult"></span> A</li>
+                        <li>峰值电流 (Ipk): <span id="ipkResult"></span> A</li>
+                        <li>饱和电流 (Isat) ≥ <strong><span id="isatRec"></span> A</strong></li>
+                        <li><small>* 基于 Fsw ≈ 2.4 MHz 计算</small></li>
+                    </ul>
+                </div>
+                <div class="result-card">
+                    <h3>Cin (输入电容)</h3>
+                    <div class="main-value">≥ 20 µF</div>
+                    <ul class="details">
+                         <li>推荐: <strong>2x10µF + 0.1µF</strong> 陶瓷电容</li>
+                         <li>推荐耐压: <strong>≥ <span id="cinVoltRec"></span> V</strong></li>
+                    </ul>
+                </div>
+                 <div class="result-card">
+                    <h3>Cout (输出电容)</h3>
+                    <div class="main-value" id="coutRec">≥ 47 µF</div>
+                    <ul class="details">
+                         <li>推荐: <strong>3x22µF</strong> 或更多</li>
+                         <li>推荐使用低ESR陶瓷电容</li>
+                         <li>推荐耐压: <strong>≥ <span id="coutVoltRec"></span> V</strong></li>
+                    </ul>
+                </div>
+            </div>
+            <div id="error-container" style="display: none;">
+                <p class="error-message" id="errorMessage"></p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>本计算器基于TPS63020数据手册。计算结果仅供参考，最终设计需经过实际测试验证</p>
+        <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>
+        </a>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const E24_BASES = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1];
+            const CAP_VOLTAGE_RATINGS = [6.3, 10, 16, 25, 35, 50];
+            const inputs = document.querySelectorAll('input[type="number"]');
+
+            function generateE24Values(min, max) {
+                const values = new Set();
+                const magnitudes = [1, 10, 100, 1000];
+                magnitudes.forEach(mag => {
+                    E24_BASES.forEach(base => {
+                        let val = parseFloat((base * mag).toPrecision(2));
+                        if (val >= min && val <= max) {
+                            values.add(val);
+                        }
+                    });
+                });
+                return Array.from(values).sort((a,b) => a - b);
+            }
+
+            function findNearestStandardValue(value, series) {
+                if (value <= 0) return series[0];
+                return series.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+            }
+
+            function findNextStandardVoltage(requiredVoltage) {
+                return CAP_VOLTAGE_RATINGS.find(rating => rating >= requiredVoltage) || CAP_VOLTAGE_RATINGS[CAP_VOLTAGE_RATINGS.length - 1];
+            }
+            
+            function formatResistorValue(value_kOhm) {
+                if (value_kOhm >= 1000) {
+                    return `${(value_kOhm / 1000).toPrecision(2)} MΩ`;
+                }
+                return `${value_kOhm} kΩ`;
+            }
+
+            function validateAndCalculate() {
+                const elements = {
+                    vinMin: { input: document.getElementById('inputVoltageMin'), wrapper: document.getElementById('vinMinWrapper'), warning: document.getElementById('vinMinWarning'), min: 1.8, max: 5.5 },
+                    vout: { input: document.getElementById('outputVoltage'), wrapper: document.getElementById('voutWrapper'), warning: document.getElementById('voutWarning'), min: 1.2, max: 5.5 },
+                    iout: { input: document.getElementById('outputCurrent'), wrapper: document.getElementById('currentWrapper'), warning: document.getElementById('currentWarning') },
+                };
+                const resultsContainer = document.getElementById('results-container');
+                const errorContainer = document.getElementById('error-container');
+                const errorMessage = document.getElementById('errorMessage');
+
+                const Vin_min = parseFloat(elements.vinMin.input.value) || 0;
+                const Vout_target = parseFloat(elements.vout.input.value) || 0;
+                const Iout = parseFloat(elements.iout.input.value) || 0;
+                const efficiency = parseFloat(document.getElementById('efficiency').value) / 100 || 0.9;
+
+                // --- Validation Stage ---
+                let isValid = true;
+                let errorMsg = "";
+                Object.values(elements).forEach(el => {
+                    el.wrapper.classList.remove('input-error');
+                    if (el.warning) el.warning.style.display = 'none';
+                });
+
+                if (Vin_min < elements.vinMin.min || Vin_min > elements.vinMin.max) {
+                    elements.vinMin.warning.style.display = 'block';
+                    isValid = false; errorMsg = `最小输入电压必须在 ${elements.vinMin.min}V 和 ${elements.vinMin.max}V 之间。`;
+                }
+                if (Vout_target < elements.vout.min || Vout_target > elements.vout.max) {
+                    elements.vout.warning.style.display = 'block';
+                    if(isValid) { isValid = false; errorMsg = `输出电压必须在 ${elements.vout.min}V 和 ${elements.vout.max}V 之间。`; }
+                }
+
+                if (!isValid) {
+                    Object.values(elements).forEach(el => el.wrapper.classList.add('input-error'));
+                    resultsContainer.style.display = 'none';
+                    errorContainer.style.display = 'block';
+                    errorMessage.textContent = errorMsg;
+                    return;
+                }
+                
+                // --- Calculation Stage ---
+                const VFB_REF = 0.5;
+                const FSW_HZ = 2400000;
+                const L_uH = 1.5;
+                const L_H = L_uH / 1000000;
+                const R1_MAX_KOHM = 2400;
+
+                // --- Smart Feedback Resistor Calculation (v4 - Multi-solution) ---
+                const R2_CANDIDATES_KOHM = generateE24Values(180, 500);
+                const ALL_R1_CANDIDATES_KOHM = generateE24Values(100, R1_MAX_KOHM);
+                
+                let solutions = [];
+
+                R2_CANDIDATES_KOHM.forEach(r2_kOhm => {
+                    const r1_ideal_kOhm = r2_kOhm * (Vout_target / VFB_REF - 1);
+                    
+                    if (r1_ideal_kOhm <= R1_MAX_KOHM) {
+                        const r1_standard_kOhm = findNearestStandardValue(r1_ideal_kOhm, ALL_R1_CANDIDATES_KOHM);
+                        const vout_actual = VFB_REF * (1 + r1_standard_kOhm / r2_kOhm);
+                        const error = Math.abs(vout_actual - Vout_target);
+                        solutions.push({ r1: r1_standard_kOhm, r2: r2_kOhm, vout: vout_actual, error: error });
+                    }
+                });
+
+                // Sort, de-duplicate, and get top 3 solutions
+                solutions.sort((a, b) => a.error - b.error);
+                const uniqueSolutions = [];
+                const seen = new Set();
+                for (const sol of solutions) {
+                    const key = `${sol.r1}-${sol.r2}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        uniqueSolutions.push(sol);
+                    }
+                }
+                const topSolutions = uniqueSolutions.slice(0, 3);
+                
+                if (topSolutions.length === 0) {
+                    isValid = false;
+                    errorMsg = `无法为目标电压 ${Vout_target}V 找到合适的反馈电阻 (R1 > ${formatResistorValue(R1_MAX_KOHM)})。请降低目标电压。`;
+                }
+
+                if (!isValid) {
+                    resultsContainer.style.display = 'none';
+                    errorContainer.style.display = 'block';
+                    errorMessage.textContent = errorMsg;
+                    return;
+                }
+
+                resultsContainer.style.display = 'grid';
+                errorContainer.style.display = 'none';
+
+                // --- Inductor Current Calculation ---
+                let rippleCurrent, peakCurrent, opMode;
+                if (Vin_min < Vout_target) {
+                    opMode = "升压 (Boost)";
+                    const D_boost = 1 - (Vin_min * efficiency) / Vout_target;
+                    rippleCurrent = (Vin_min * D_boost) / (FSW_HZ * L_H);
+                    const I_L_avg = Iout / (1 - D_boost);
+                    peakCurrent = I_L_avg + (rippleCurrent / 2);
+                } else {
+                    opMode = "降压 (Buck)";
+                    const D_buck = Vout_target / Vin_min;
+                    rippleCurrent = (Vin_min - Vout_target) * D_buck / (FSW_HZ * L_H);
+                    peakCurrent = Iout + (rippleCurrent / 2);
+                }
+                const Isat_rec = parseFloat((peakCurrent * 1.25).toFixed(2));
+
+                // Capacitor Voltage Rating
+                const cin_volt_rec = findNextStandardVoltage(5.5);
+                const cout_volt_rec = findNextStandardVoltage(Vout_target * 1.25);
+
+                // --- Display Stage ---
+                const fbListContainer = document.getElementById('fb-results-list');
+                fbListContainer.innerHTML = '';
+                topSolutions.forEach((sol, index) => {
+                    const isBest = index === 0 ? ' <span style="color:var(--success-color); font-size:0.9em;">(最佳)</span>' : '';
+                    const voutErrorPercent = ((sol.vout - Vout_target) / Vout_target * 100).toFixed(2);
+                    const errorSign = voutErrorPercent > 0 ? '+' : '';
+                    
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>R1:</strong> ${formatResistorValue(sol.r1)} / <strong>R2:</strong> ${formatResistorValue(sol.r2)}${isBest}<br>
+                        <span class="vout-result">Vout: ${sol.vout.toFixed(3)} V</span>
+                        <span class="error-result">(误差: ${errorSign}${voutErrorPercent}%)</span>
+                    `;
+                    fbListContainer.appendChild(li);
+                });
+
+                document.getElementById('lRec').textContent = L_uH;
+                document.getElementById('opMode').textContent = opMode;
+                document.getElementById('ilResult').textContent = rippleCurrent.toFixed(3);
+                document.getElementById('ipkResult').textContent = peakCurrent.toFixed(3);
+                document.getElementById('isatRec').textContent = Isat_rec;
+                
+                document.getElementById('cinVoltRec').textContent = cin_volt_rec;
+                document.getElementById('coutVoltRec').textContent = cout_volt_rec;
+            }
+            
+            inputs.forEach(input => input.addEventListener('input', validateAndCalculate));
+            validateAndCalculate();
+        });
+    </script>
+</body>
+</html>
