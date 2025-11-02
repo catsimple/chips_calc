@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silergy SY808x 参数计算器</title>
+    <title>SY808x 参数计算器</title>
     <style>
         :root {
             --primary-color: #004EA2; 
             --label-color: #4A90E2;   
             --danger-color: #dc3545;
+            --success-color: #28a745; /* Added for green highlight */
             --warning-color: #ffc107;
             --info-color: #17a2b8;
             --light-gray: #f8f9fa;
@@ -155,6 +156,31 @@
             color: var(--info-color);
             font-weight: bold;
         }
+        /* Styles for FB results list */
+        #fb-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #fb-results-list li {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background-color: var(--light-gray);
+            font-size: 0.9em;
+            border: 1px solid var(--medium-gray);
+            transition: all 0.2s ease-in-out;
+        }
+        #fb-results-list li:first-child {
+            border-left: 4px solid var(--success-color);
+        }
+        #fb-results-list .vout-result {
+            font-weight: bold;
+            color: var(--dark-gray);
+        }
+        #fb-results-list .error-result {
+            font-size: 0.9em;
+        }
         .message-box {
             font-weight: bold;
             text-align: center;
@@ -186,7 +212,6 @@
             .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); padding: 20px; }
             .input-group { max-width: none; }
             h1 { font-size: 1.5em; }
-            .result-card .main-value { font-size: 1.8em; }
         }
     </style>
 </head>
@@ -196,6 +221,9 @@
         <!-- Input Panel -->
         <div class="input-panel">
             <h1 id="main-title">矽力杰 SY808x 设计参数</h1>
+            <a href="https://oshwhub.com/catsimple/dcdc-to-1117" target="_blank" class="sub-link">
+                <span style="font-size:0.8em;">SY808x PCB示例</span>
+            </a>
             <div class="input-group">
                 <label for="chipModel">选择芯片型号</label>
                 <div class="select-wrapper">
@@ -239,13 +267,10 @@
         <div class="output-panel">
             <h1>计算结果 & 芯片特性</h1>
             <div id="results-container">
-                <div class="result-card">
-                    <h3>反馈电阻 (FB)</h3>
-                    <div class="main-value"><span id="resistorMainValue"></span></div>
-                    <ul class="details">
-                        <li><span class="label">RH (高边):</span> <span class="value" id="resistorHighValue"></span></li>
-                        <li><span class="label">RL (低边):</span> <span class="value" id="resistorLowValue"></span></li>
-                        <li><span class="label">RL 精确计算值:</span> <span class="value" id="resistorCalcValue"></span></li>
+                 <div class="result-card">
+                    <h3>反馈电阻 (FB) - 多方案推荐</h3>
+                    <ul id="fb-results-list">
+                        <!-- JS will populate this -->
                     </ul>
                 </div>
                 <div class="result-card">
@@ -285,7 +310,7 @@
     <footer>
         <p>本计算器基于矽力杰(Silergy) SY808x/89x系列数据手册。计算结果仅供参考，最终设计需经过实际测试验证。</p>
          <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24" fill="currentColor">
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
             </svg>
         </a>
@@ -305,20 +330,29 @@
             const E96_SERIES = [100, 102, 105, 107, 110, 113, 115, 118, 121, 124, 127, 130, 133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169, 174, 178, 182, 187, 191, 196, 200, 205, 210, 215, 221, 226, 232, 237, 243, 249, 255, 261, 267, 274, 280, 287, 294, 301, 309, 316, 324, 332, 340, 348, 357, 365, 374, 383, 392, 402, 412, 422, 432, 442, 453, 464, 475, 487, 499, 511, 523, 536, 549, 562, 576, 590, 604, 619, 634, 649, 665, 681, 698, 715, 732, 750, 768, 787, 806, 825, 845, 866, 887, 909, 931, 953, 976];
             const CAP_VOLTAGE_RATINGS = [6.3, 10, 16, 25, 35, 50];
             const allInputs = document.querySelectorAll('input[type="number"], select');
+            
+            const E96_KOHM_VALUES = (() => {
+                const values = new Set();
+                const magnitudes = [0.01, 0.1, 1, 10, 100, 1000];
+                magnitudes.forEach(mag => {
+                    E96_SERIES.forEach(base => {
+                        let val_ohm = base * mag;
+                        values.add(val_ohm);
+                    });
+                });
+                return Array.from(values).sort((a,b) => a - b).map(v => v / 1000);
+            })();
 
             function round(value, decimals) {
                 if (typeof value !== 'number' || !isFinite(value)) return value;
                 return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
             }
 
-            function findNearestStandardValue(value, series) {
-                if (value <= 0) return 0;
-                const valueScaled = value / Math.pow(10, Math.floor(Math.log10(value)));
-                const closestRaw = series.reduce((prev, curr) => 
-                    (Math.abs(curr / 100 - valueScaled) < Math.abs(prev / 100 - valueScaled) ? curr : prev)
+            function findNearestStandardValue(value_kOhm, series_kOhm) {
+                if (value_kOhm <= 0) return 0;
+                return series_kOhm.reduce((prev, curr) => 
+                    (Math.abs(curr - value_kOhm) < Math.abs(prev - value_kOhm) ? curr : prev)
                 );
-                const result = (closestRaw / 100) * Math.pow(10, Math.floor(Math.log10(value)));
-                return round(result, 3); // Round the final standard value
             }
             
             function findNextStandardVoltage(requiredVoltage) {
@@ -339,7 +373,7 @@
                 const specs = CHIP_SPECS[selectedChip];
                 
                 const Vin = parseFloat(elements.vin.input.value) || 0;
-                const Vout = parseFloat(elements.vout.input.value) || 0;
+                const Vout_target = parseFloat(elements.vout.input.value) || 0;
                 const Iout = parseFloat(elements.iout.input.value) || 0;
 
                 let isValid = true;
@@ -358,45 +392,38 @@
 
                 if (Vin < specs.vin_min || Vin > specs.vin_max) {
                     elements.vin.warning.style.display = 'block';
-                    isValid = false;
-                    errorMsg = `输入电压超出所选芯片 (${selectedChip}) 的工作范围。`;
+                    isValid = false; errorMsg = `输入电压超出所选芯片 (${selectedChip}) 的工作范围。`;
                 }
-                
                 if (Iout < 0 || Iout > specs.iout_max) {
                     elements.iout.warning.style.display = 'block';
                     if(isValid) { isValid = false; errorMsg = `输出电流超出所选芯片 (${selectedChip}) 的最大能力。`; }
                 }
-
-                if (Vout < specs.vfb_ref && Vout > 0) {
+                if (Vout_target < specs.vfb_ref && Vout_target > 0) {
                      elements.vout.warning.style.display = 'block';
                      if(isValid) { isValid = false; errorMsg = `输出电压低于芯片的最低可调电压 (${specs.vfb_ref}V)。`; }
                 }
-                
-                if (Vout > Vin && isValid && Vout > 0) {
+                if (Vout_target > Vin && isValid && Vout_target > 0) {
                      elements.vout.warning.style.display = 'block';
                      elements.vout.warning.textContent = '输出电压不能高于输入电压';
                      if(isValid) { isValid = false; errorMsg = "错误：输出电压不能高于输入电压。"; }
                 }
-
-                if (Vout <= 0 && isValid) {
+                if (Vout_target <= 0 && isValid) {
                     elements.vout.warning.style.display = 'block';
                     elements.vout.warning.textContent = '输出电压必须大于0';
-                    isValid = false;
-                    errorMsg = "错误：输出电压必须大于0。";
+                    isValid = false; errorMsg = "错误：输出电压必须大于0。";
                 }
 
                 const rdsOnTop = parseFloat(specs.rds_on.split('/')[0]) / 1000;
                 const FSW_HZ = specs.fsw_mhz * 1000000;
 
-                if (isValid && Vout > 0) {
-                    const minVinForRegulation = Vout + Iout * rdsOnTop;
+                if (isValid && Vout_target > 0) {
+                    const minVinForRegulation = Vout_target + Iout * rdsOnTop;
                     if (Vin < minVinForRegulation) {
-                        warningMsg += `警告：输入电压 (${Vin}V) 过低，芯片将进入100%占空比（直通）模式。实际输出电压将低于设定的 ${Vout}V，约为 ${round(Vin - Iout * rdsOnTop, 2)}V。<br>`;
+                        warningMsg += `警告：输入电压 (${Vin}V) 过低，芯片将进入100%占空比（直通）模式。实际输出电压将低于设定的 ${Vout_target}V，约为 ${round(Vin - Iout * rdsOnTop, 2)}V。<br>`;
                     }
-
-                    const requiredTon_ns = (Vout / (Vin * FSW_HZ)) * 1e9;
+                    const requiredTon_ns = (Vout_target / (Vin * FSW_HZ)) * 1e9;
                     if (requiredTon_ns < specs.ton_min_ns) {
-                         warningMsg += `警告：在此工况下(${Vin}V输入, ${Vout}V输出)，所需的导通时间 (${round(requiredTon_ns, 1)}ns) 小于芯片的最小导通时间 (${specs.ton_min_ns}ns)，可能导致输出不稳定或跳频。`;
+                         warningMsg += `警告：在此工况下(${Vin}V输入, ${Vout_target}V输出)，所需的导通时间 (${round(requiredTon_ns, 1)}ns) 小于芯片的最小导通时间 (${specs.ton_min_ns}ns)，可能导致输出不稳定或跳频。`;
                     }
                 }
 
@@ -414,39 +441,63 @@
 
                 // --- Calculation Stage ---
                 const VFB_REF = specs.vfb_ref;
-                let RH_KOHM_rec, RL_kOhm_calc, RL_k_rec;
                 
-                if (Vout < 1.5 && Vout > VFB_REF) {
-                    RH_KOHM_rec = 49.9;
-                } else {
-                    RH_KOHM_rec = 100;
-                }
-                RL_kOhm_calc = RH_KOHM_rec * VFB_REF / (Vout - VFB_REF);
-                RL_k_rec = findNearestStandardValue(RL_kOhm_calc * 1000, E96_SERIES) / 1000;
-                
-                document.getElementById('resistorHighValue').textContent = `${RH_KOHM_rec} kΩ`;
-                document.getElementById('resistorLowValue').textContent = `${RL_k_rec} kΩ`;
-                document.getElementById('resistorMainValue').textContent = `${RL_k_rec} kΩ`;
-                document.getElementById('resistorCalcValue').textContent = `${round(RL_kOhm_calc, 2)} kΩ`;
+                const RH_CANDIDATES_KOHM = [49.9, 68.1, 80.6, 100, 121, 150];
+                let solutions = [];
 
-                let L_uH_rec;
-                if (specs.iout_max <= 1.0) {
-                    L_uH_rec = 2.2;
-                } else if (Vout >= 3.3) {
-                     L_uH_rec = 2.2;
-                } else {
-                    L_uH_rec = (specs.fsw_mhz === 1.0) ? 2.2 : 1.0;
+                RH_CANDIDATES_KOHM.forEach(rh_kOhm => {
+                    const rl_ideal_kOhm = rh_kOhm * VFB_REF / (Vout_target - VFB_REF);
+                    if (rl_ideal_kOhm > 0) {
+                        const rl_standard_kOhm = findNearestStandardValue(rl_ideal_kOhm, E96_KOHM_VALUES);
+                        const vout_actual = VFB_REF * (1 + rh_kOhm / rl_standard_kOhm);
+                        const error = Math.abs(vout_actual - Vout_target);
+                        solutions.push({ rh: rh_kOhm, rl: rl_standard_kOhm, vout: vout_actual, error: error });
+                    }
+                });
+
+                solutions.sort((a, b) => a.error - b.error);
+                const uniqueSolutions = [];
+                const seen = new Set();
+                for (const sol of solutions) {
+                    const key = `${sol.rh}-${sol.rl}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        uniqueSolutions.push(sol);
+                    }
                 }
+                const topSolutions = uniqueSolutions.slice(0, 3);
+                
+                let L_uH_rec;
+                if (specs.iout_max <= 1.0) { L_uH_rec = 2.2; } 
+                else if (Vout_target >= 3.3) { L_uH_rec = 2.2; } 
+                else { L_uH_rec = (specs.fsw_mhz === 1.0) ? 2.2 : 1.0; }
                 const L_H = L_uH_rec / 1000000;
 
-                const rippleCurrent = (Vout * (Vin - Vout)) / (Vin * L_H * FSW_HZ);
+                const rippleCurrent = (Vout_target * (Vin - Vout_target)) / (Vin * L_H * FSW_HZ);
                 const peakCurrent = Iout + (rippleCurrent / 2);
                 const Isat_rec = parseFloat((peakCurrent * 1.3).toFixed(2));
 
                 const cin_volt_rec = findNextStandardVoltage(Vin);
-                const cout_volt_rec = findNextStandardVoltage(Vout * 1.25);
+                const cout_volt_rec = findNextStandardVoltage(Vout_target * 1.25);
 
                 // --- Display Stage ---
+                const fbListContainer = document.getElementById('fb-results-list');
+                fbListContainer.innerHTML = '';
+                topSolutions.forEach((sol, index) => {
+                    const isBest = index === 0 ? ' <span style="color:var(--success-color); font-size:0.9em;">(最佳)</span>' : '';
+                    const voutErrorPercent = ((sol.vout - Vout_target) / Vout_target * 100).toFixed(2);
+                    const errorSign = voutErrorPercent >= 0 ? '+' : '';
+                    
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>RH:</strong> ${sol.rh} kΩ / <strong>RL:</strong> ${sol.rl} kΩ${isBest}<br>
+                        <span class="vout-result">Vout: ${sol.vout.toFixed(4)} V</span>
+                        <span class="error-result">(误差: ${errorSign}${voutErrorPercent}%)</span>
+                    `;
+                    fbListContainer.appendChild(li);
+                });
+
+
                 document.getElementById('lRec').textContent = `${L_uH_rec} µH`;
                 document.getElementById('ilResult').textContent = rippleCurrent > 0 ? `${round(rippleCurrent, 3)} A` : "N/A";
                 document.getElementById('ipkResult').textContent = `${round(peakCurrent, 3)} A`;
