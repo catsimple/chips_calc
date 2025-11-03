@@ -117,6 +117,10 @@
             display: flex;
             flex-direction: column;
         }
+        /* Special style for the feedback resistor card to accommodate more content */
+        .result-card.feedback-card {
+            grid-column: 1 / -1; /* Make it span full width */
+        }
         .result-card h3 {
             margin-top: 0;
             margin-bottom: 10px;
@@ -142,6 +146,36 @@
         .result-card .details strong {
             color: var(--primary-color);
         }
+        /* New styles for FB results list */
+        #fb-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #fb-results-list li {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: var(--light-gray);
+            font-size: 0.9em;
+            border: 1px solid var(--medium-gray);
+            transition: all 0.2s ease-in-out;
+        }
+        #fb-results-list li.best-option {
+            border-left: 4px solid var(--success-color);
+            background-color: #f0fff0;
+        }
+        #fb-results-list .vout-result {
+            font-weight: bold;
+            color: var(--dark-gray);
+        }
+        #fb-results-list .error-result {
+            font-size: 0.9em;
+        }
         .error-message {
             color: var(--danger-color);
             font-weight: bold;
@@ -157,7 +191,6 @@
             border-top: 1px solid var(--medium-gray);
             color: #6c757d;
             font-size: 0.9em;
-
         }
 
         @media (max-width: 768px) {
@@ -167,7 +200,7 @@
             .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); padding: 20px; }
             .input-group { max-width: none; }
             h1 { font-size: 1.5em; }
-            .result-card .main-value { font-size: 1.6em; }
+            #fb-results-list { flex-direction: column; }
         }
     </style>
 </head>
@@ -184,7 +217,7 @@
             <div class="input-group">
                 <label for="inputVoltage">输入电压</label>
                 <div class="input-wrapper" id="vinWrapper">
-                    <input type="number" id="inputVoltage" value="12">
+                    <input type="number" id="inputVoltage" value="12" step="0.1">
                     <span class="unit">Vdc</span>
                 </div>
                 <p class="warning-text" id="vinWarning">必须在 4.5V - 17V 范围内</p>
@@ -192,7 +225,7 @@
             <div class="input-group">
                 <label for="outputVoltage">输出电压</label>
                 <div class="input-wrapper" id="voutWrapper">
-                    <input type="number" id="outputVoltage" value="3.3">
+                    <input type="number" id="outputVoltage" value="3.3" step="0.1">
                     <span class="unit">V</span>
                 </div>
                  <p class="warning-text" id="voutWarning">推荐范围 0.76V - 7V</p>
@@ -200,7 +233,7 @@
             <div class="input-group">
                 <label for="outputCurrent">输出电流<small class="label-note">最大 3A</small></label>
                 <div class="input-wrapper" id="currentWrapper">
-                    <input type="number" id="outputCurrent" value="3">
+                    <input type="number" id="outputCurrent" value="3" step="0.1">
                     <span class="unit">A</span>
                 </div>
                 <p class="warning-text" id="currentWarning">推荐范围 0A - 3A</p>
@@ -211,14 +244,10 @@
         <div class="output-panel">
             <h1>计算结果</h1>
             <div id="results-container">
-                <div class="result-card">
+                <div class="result-card feedback-card">
                     <h3>VFB 反馈电阻</h3>
-                    <div class="main-value"><span id="r1Rec"></span> kΩ</div>
-                    <ul class="details">
-                        <li><strong>R1 (高边): </strong> <span id="r1Rec_detail"></span> kΩ</li>
-                        <li><strong>R2 (低边): </strong> 10 kΩ (推荐)</li>
-                        <li>精确计算值 (R1): <span id="r1Result"></span> kΩ</li>
-                        <li>VFB 参考电压: 0.768 V</li>
+                    <ul id="fb-results-list">
+                        <!-- JS will populate this -->
                     </ul>
                 </div>
                 <div class="result-card">
@@ -274,17 +303,28 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const E24_SERIES = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1];
+            const E24_BASES = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1];
             const CAP_VOLTAGE_RATINGS = [6.3, 10, 16, 25, 35, 50];
             const inputs = document.querySelectorAll('input[type="number"]');
 
+            function generateE_Values(bases, min, max) {
+                const values = new Set();
+                let magnitude = 1;
+                while (magnitude * bases[0] <= max * 10) {
+                     bases.forEach(base => {
+                        let val = parseFloat((base * magnitude).toPrecision(2));
+                         if (val >= min && val <= max) {
+                            values.add(val);
+                        }
+                    });
+                    magnitude *= 10;
+                }
+                return Array.from(values).sort((a,b) => a - b);
+            }
+
             function findNearestStandardValue(value, series) {
-                if (value <= 0) return 0;
-                let magnitude = Math.pow(10, Math.floor(Math.log10(value)));
-                let normalizedValue = value / magnitude;
-                let closest = series.reduce((prev, curr) => Math.abs(curr - normalizedValue) < Math.abs(prev - normalizedValue) ? curr : prev);
-                let result = parseFloat((closest * magnitude).toPrecision(2));
-                return result;
+                if (value <= 0) return series[0];
+                return series.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
             }
 
             function findNextStandardVoltage(requiredVoltage) {
@@ -305,21 +345,20 @@
                 const elements = {
                     vin: { input: document.getElementById('inputVoltage'), wrapper: document.getElementById('vinWrapper'), warning: document.getElementById('vinWarning'), min: 4.5, max: 17 },
                     vout: { input: document.getElementById('outputVoltage'), wrapper: document.getElementById('voutWrapper'), warning: document.getElementById('voutWarning'), min: 0.76, max: 7 },
-                    iout: { input: document.getElementById('outputCurrent'), wrapper: document.getElementById('currentWrapper'), warning: document.getElementById('currentWarning'), min: 0, max: 3 },
+                    iout: { input: document.getElementById('outputCurrent'), wrapper: document.getElementById('currentWrapper'), warning: document.getElementById('currentWarning'), min: 0, max: 3  },
                 };
                 const resultsContainer = document.getElementById('results-container');
                 const errorContainer = document.getElementById('error-container');
                 const errorMessage = document.getElementById('errorMessage');
 
                 const Vin = parseFloat(elements.vin.input.value) || 0;
-                const Vout = parseFloat(elements.vout.input.value) || 0;
+                const Vout_target = parseFloat(elements.vout.input.value) || 0;
                 const Iout = parseFloat(elements.iout.input.value) || 0;
 
                 let isValid = true;
                 let errorMsg = "";
 
                 // --- Validation Stage ---
-                // Reset error states first
                 Object.values(elements).forEach(el => {
                     el.wrapper.classList.remove('input-error');
                     el.warning.style.display = 'none';
@@ -327,23 +366,18 @@
 
                 if (Vin < elements.vin.min || Vin > elements.vin.max) {
                     elements.vin.warning.style.display = 'block';
-                    isValid = false;
-                    errorMsg = `输入电压必须在 ${elements.vin.min}V 和 ${elements.vin.max}V 之间。`;
+                    isValid = false; errorMsg = `输入电压必须在 ${elements.vin.min}V 和 ${elements.vin.max}V 之间。`;
                 }
-
-                if (Vout < elements.vout.min || Vout > elements.vout.max) {
+                if (Vout_target < elements.vout.min || Vout_target > elements.vout.max) {
                     elements.vout.warning.style.display = 'block';
                      if(isValid) { isValid = false; errorMsg = `输出电压必须在 ${elements.vout.min}V 和 ${elements.vout.max}V 之间。`; }
                 }
-                
                 if (Iout < elements.iout.min || Iout > elements.iout.max) {
                     elements.iout.warning.style.display = 'block';
                     if(isValid) { isValid = false; errorMsg = `输出电流必须在 ${elements.iout.min}A 和 ${elements.iout.max}A 之间。`; }
                 }
-
-                if (Vin < Vout + 0.75 && isValid) {
-                    isValid = false;
-                    errorMsg = "为保证稳定工作，输入电压应至少比输出电压高 0.75V。";
+                if (Vin < Vout_target + 0.75 && isValid) {
+                    isValid = false; errorMsg = "为保证稳定工作，输入电压应至少比输出电压高 0.75V。";
                 }
 
                 if (!isValid) {
@@ -359,27 +393,66 @@
 
                 // --- Calculation Stage ---
                 const VFB_REF = 0.768; // V
-                const R2_KOHM = 10;    // kΩ
                 const FSW_HZ = 580000; // Hz
 
-                const R1_kOhm_calc = R2_KOHM * (Vout / VFB_REF - 1);
-                const R1_kOhm_rec = findNearestStandardValue(R1_kOhm_calc, E24_SERIES);
+                // --- Smart Feedback Resistor Calculation ---
+                const R2_CANDIDATES_KOHM = generateE_Values(E24_BASES, 8, 20); // Recommended range for R2
+                const ALL_R1_CANDIDATES_KOHM = generateE_Values(E24_BASES, 10, 200);
+                
+                let solutions = [];
 
-                const components = getRecommendedComponents(Vout);
+                R2_CANDIDATES_KOHM.forEach(r2_kOhm => {
+                    const r1_ideal_kOhm = r2_kOhm * (Vout_target / VFB_REF - 1);
+                    const r1_standard_kOhm = findNearestStandardValue(r1_ideal_kOhm, ALL_R1_CANDIDATES_KOHM);
+                    
+                    const vout_actual = VFB_REF * (1 + r1_standard_kOhm / r2_kOhm);
+                    const error = Math.abs(vout_actual - Vout_target);
+                    solutions.push({ r1: r1_standard_kOhm, r2: r2_kOhm, vout: vout_actual, error: error });
+                });
+
+                solutions.sort((a, b) => a.error - b.error);
+                const uniqueSolutions = [];
+                const seen = new Set();
+                for (const sol of solutions) {
+                    const key = `${sol.r1}-${sol.r2}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        uniqueSolutions.push(sol);
+                    }
+                }
+                const topSolutions = uniqueSolutions.slice(0, 3);
+                
+                // --- Other Calculations (remain unchanged) ---
+                const components = getRecommendedComponents(Vout_target);
                 const L_uH = components.L_uH;
                 const L_H = L_uH / 1000000;
 
-                const rippleCurrent = (Vout * (Vin - Vout)) / (Vin * L_H * FSW_HZ);
+                const rippleCurrent = (Vout_target * (Vin - Vout_target)) / (Vin * L_H * FSW_HZ);
                 const peakCurrent = Iout + (rippleCurrent / 2);
                 const Isat_rec = parseFloat((peakCurrent * 1.25).toFixed(2));
 
                 const cin_volt_rec = findNextStandardVoltage(Vin);
-                const cout_volt_rec = findNextStandardVoltage(Vout * 1.25);
+                const cout_volt_rec = findNextStandardVoltage(Vout_target * 1.25);
 
                 // --- Display Stage ---
-                document.getElementById('r1Result').textContent = R1_kOhm_calc.toFixed(2);
-                document.getElementById('r1Rec').textContent = R1_kOhm_rec;
-                document.getElementById('r1Rec_detail').textContent = R1_kOhm_rec;
+                const fbListContainer = document.getElementById('fb-results-list');
+                fbListContainer.innerHTML = '';
+                topSolutions.forEach((sol, index) => {
+                    const isBest = index === 0;
+                    const voutErrorPercent = ((sol.vout - Vout_target) / Vout_target * 100).toFixed(2);
+                    const errorSign = voutErrorPercent >= 0 ? '+' : '';
+                    
+                    const li = document.createElement('li');
+                    if (isBest) {
+                        li.classList.add('best-option');
+                    }
+                    li.innerHTML = `
+                        <strong>R1:</strong> ${sol.r1} kΩ / <strong>R2:</strong> ${sol.r2} kΩ ${isBest ? '<span style="color:var(--success-color); font-size:0.9em;">(最佳)</span>' : ''}<br>
+                        <span class="vout-result">Vout: ${sol.vout.toFixed(4)} V</span>
+                        <span class="error-result">(误差: ${errorSign}${voutErrorPercent}%)</span>
+                    `;
+                    fbListContainer.appendChild(li);
+                });
 
                 document.getElementById('lRec').textContent = L_uH;
                 document.getElementById('ilResult').textContent = rippleCurrent.toFixed(3);
