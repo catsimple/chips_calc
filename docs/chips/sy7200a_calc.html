@@ -124,6 +124,25 @@
             border-bottom-right-radius: 5px;
         }
         
+        /* Chip Specs Tags */
+        .chip-specs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .spec-tag {
+            background: #e7f1ff;
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border: 1px solid #b6d4fe;
+        }
+        
         /* Grid layout for compact LED inputs */
         .grid-2-cols {
             display: grid;
@@ -228,7 +247,15 @@
             <a href="https://oshwhub.com/catsimple/sy7200-sheng-ya-chu-mo-ban-yuan-xing" target="_blank" class="sub-link">
                 <span style="font-size:0.8em;">SY7200 PCB示例</span>
             </a>
-            
+            <div class="chip-specs">
+                <span class="spec-tag">Boost 拓扑</span>
+                <span class="spec-tag">恒流输出</span>
+                <span class="spec-tag">Vin: 2.8-30V</span>
+                <span class="spec-tag">Vout Max: 30V</span>
+                <span class="spec-tag">Fsw: 1MHz</span>
+                <span class="spec-tag">Isw Limit: 2A</span>
+                <span class="spec-tag">PWM调光</span>
+            </div>
             <div class="section-title">LED 灯组参数</div>
             <div class="grid-2-cols">
                 <div class="input-group">
