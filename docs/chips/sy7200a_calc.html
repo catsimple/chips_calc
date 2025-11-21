@@ -6,75 +6,231 @@
     <title>SY7200A 参数计算器</title>
     <style>
         :root {
-            --primary-color: #0056b3;
+            --primary-color: #004EA2; 
+            --label-color: #4A90E2;   
             --danger-color: #dc3545;
             --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
             --light-gray: #f8f9fa;
             --medium-gray: #e9ecef;
             --dark-gray: #495057;
             --border-color: #ced4da;
-            --error-bg-color: #f8d7da;
         }
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6; color: #343a40; background-color: var(--light-gray); margin: 0; padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: #343a40;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
         }
         .container {
-            width: 95%; max-width: 1600px; margin: 0 auto; background: #fff; border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1); overflow: hidden; display: flex;
+            width: 95%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
         }
-        .input-panel { flex: 1; min-width: 320px; padding: 30px; }
-        .output-panel { 
-            flex: 1.5; padding: 30px; background-color: #fcfdff; border-left: 1px solid var(--medium-gray);
+        .input-panel {
+            flex: 1;
+            min-width: 320px;
+            padding: 30px;
         }
-        h1, h2, h3 { color: var(--primary-color); }
-        h1 { border-bottom: 2px solid var(--medium-gray); padding-bottom: 10px; margin-top: 0; }
-        h3 { margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--medium-gray); padding-bottom: 8px;}
-        .input-group { margin-bottom: 20px; max-width: 350px; }
-        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-gray); }
-        .label-note { font-weight: normal; font-size: 0.8em; color: #6c757d; margin-left: 8px; }
-        .input-wrapper { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 6px; }
-        .input-wrapper:focus-within { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
-        .input-wrapper.input-error { border-color: var(--danger-color); }
+        .output-panel {
+            flex: 1.5;
+            padding: 30px;
+            background-color: #fcfdff;
+            border-left: 1px solid var(--medium-gray);
+        }
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        h1 {
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 10px;
+        }
+        h3 {
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+            padding-bottom: 8px;
+            font-size: 1.1em;
+        }
+        .section-title {
+            color: var(--dark-gray);
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .input-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-gray);
+        }
+        .label-note {
+            font-weight: normal;
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fff;
+        }
+        .input-wrapper:focus-within {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .input-wrapper.input-error {
+            border-color: var(--danger-color);
+        }
         .input-wrapper input {
-            flex-grow: 1; width: 100%; padding: 12px; border: none; background: transparent; font-size: 1.1em; outline: none;
+            flex-grow: 1;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-size: 1.1em;
+            outline: none;
             -moz-appearance: textfield;
         }
         .input-wrapper .unit {
-            padding: 0 15px; font-weight: 500; color: var(--dark-gray); background-color: var(--medium-gray);
-            border-left: 1px solid var(--border-color); align-self: stretch; display: flex; align-items: center;
+            padding: 0 15px;
+            font-weight: 500;
+            color: var(--dark-gray);
+            background-color: var(--medium-gray);
+            border-left: 1px solid var(--border-color);
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
         }
-        .inline-group { display: flex; flex-wrap: wrap; gap: 10px; max-width: none; }
-        .inline-group .input-group { flex: 1 1 120px; max-width: none; margin-bottom: 0; }
-        .inline-group .input-group label { font-size: 0.9em; }
+        
+        /* Grid layout for compact LED inputs */
+        .grid-2-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        #results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .result-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--medium-gray);
+            display: flex;
+            flex-direction: column;
+        }
+        .result-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-size: 1.2em;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .result-card .main-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .result-card .details {
+            font-size: 0.95em;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: #555;
+            flex-grow: 1;
+        }
+        .result-card .details li {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .result-card .details .label {
+            color: var(--label-color);
+            font-weight: 600;
+            padding-right: 10px;
+        }
+        .result-card .details .value {
+            font-weight: bold;
+            text-align: right;
+        }
+        .result-card .details small {
+            display: block;
+            color: #999;
+            font-size: 0.85em;
+            margin-top: 5px;
+            width: 100%;
+        }
 
-        #results-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-        .result-card { background: #fff; padding: 15px 20px; border-radius: 8px; border: 1px solid var(--medium-gray); }
-        .result-card h3 { margin-top: 0; margin-bottom: 10px; color: var(--primary-color); font-size: 1.1em; }
-        .result-card .main-value { font-size: 1.8em; font-weight: bold; color: var(--danger-color); margin-bottom: 10px; }
-        .result-card .details { font-size: 0.9em; list-style: none; padding: 0; margin: 0; color: #555; }
-        .result-card .details li { margin-bottom: 5px; }
-        .result-card .details strong { color: var(--success-color); }
+        /* Error Message Styling matching SY808x message-box */
         .error-message-container {
-            color: var(--danger-color); font-weight: bold; text-align: center; padding: 20px;
-            background-color: var(--error-bg-color); border-radius: 8px; display: none;
+            display: none; /* Hidden by default */
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: var(--danger-color);
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
         }
-        footer { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--medium-gray); color: #6c757d; font-size: 0.9em; }
-        @media (max-width: 900px) {
-            .container { flex-direction: column; } .input-panel { min-width: 0; }
-            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--medium-gray);
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 992px) {
+            body { padding: 10px; }
+            .container { flex-direction: column; width: 100%; box-shadow: none; }
+            .input-panel { min-width: 0; padding: 20px; }
+            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); padding: 20px; }
+            .grid-2-cols { grid-template-columns: 1fr; gap: 0; }
+            .input-group { max-width: none; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="input-panel">
-            <h1>SY7200A 设计参数</h1>
+            <h1>矽力杰 SY7200A 设计参数</h1>
             <a href="https://oshwhub.com/catsimple/sy7200-sheng-ya-chu-mo-ban-yuan-xing" target="_blank" class="sub-link">
                 <span style="font-size:0.8em;">SY7200 PCB示例</span>
             </a>
-            <h3>LED 灯组参数</h3>
-            <div class="inline-group">
+            
+            <div class="section-title">LED 灯组参数</div>
+            <div class="grid-2-cols">
                 <div class="input-group">
                     <label for="ledVf">单颗正向压降 Vf</label>
                     <div class="input-wrapper"><input type="number" step="0.1" id="ledVf" value="3.0"><span class="unit">V</span></div>
@@ -93,43 +249,46 @@
                 </div>
             </div>
 
-            <h3>电路参数</h3>
+            <div class="section-title">电路参数</div>
             <div class="input-group">
-                <label for="vin">输入电压<small class="label-note">2.8V - 30V</small></label>
-                <div class="input-wrapper" id="vinWrapper"><input type="number" step="any" id="vin" value="5"><span class="unit">V</span></div>
+                <label for="vin">输入电压 (Vin) <span class="label-note">2.8V - 30V</span></label>
+                <div class="input-wrapper" id="vinWrapper"><input type="number" step="0.1" id="vin" value="5"><span class="unit">V</span></div>
             </div>
             <div class="input-group">
                 <label for="vout">LED 灯组总电压 (Vout)</label>
-                <div class="input-wrapper" id="voutWrapper"><input type="number" step="any" id="vout" readonly><span class="unit">V</span></div>
+                <div class="input-wrapper" id="voutWrapper"><input type="number" step="any" id="vout" readonly style="background-color: #f8f9fa; color: #6c757d;"><span class="unit">V</span></div>
             </div>
             <div class="input-group">
                 <label for="iout">LED 灯组总电流 (Iout)</label>
-                <div class="input-wrapper" id="ioutWrapper"><input type="number" step="any" id="iout" readonly><span class="unit">mA</span></div>
+                <div class="input-wrapper" id="ioutWrapper"><input type="number" step="any" id="iout" readonly style="background-color: #f8f9fa; color: #6c757d;"><span class="unit">mA</span></div>
             </div>
              <div class="input-group">
-                <label for="diodeVf">二极管正向压降 (Vd)<small class="label-note">请参考二极管手册</small></label>
+                <label for="diodeVf">二极管正向压降 (Vd)<span class="label-note">请参考手册</span></label>
                 <div class="input-wrapper" id="diodeVfWrapper"><input type="number" step="0.01" id="diodeVf" value="0.5"><span class="unit">V</span></div>
             </div>
         </div>
+        
         <div class="output-panel" id="outputPanel">
             <h1>计算结果</h1>
-            <div class="error-message-container" id="errorContainer"><p id="errorMessage"></p></div>
+            <!-- Error container ID must match JS -->
+            <div class="error-message-container" id="errorContainer"><p id="errorMessage" style="margin:0;"></p></div>
+            
             <div id="results-container">
                 <div class="result-card">
                     <h3>R1 (电流采样电阻)</h3>
                     <div class="main-value"><span id="r1Rec"></span> Ω</div>
                     <ul class="details">
-                        <li>精确计算值: <span id="r1Exact"></span> Ω</li>
-                        <li><small>R1 = 0.2V / Iout</small></li>
+                        <li><span class="label">精确计算值:</span> <span class="value"><span id="r1Exact"></span> Ω</span></li>
+                        <li><small>公式: 0.2V / Iout</small></li>
                     </ul>
                 </div>
                  <div class="result-card">
                     <h3>L (功率电感)</h3>
                     <div class="main-value"><span id="lRec"></span> µH</div>
                     <ul class="details">
-                        <li>推荐范围: <strong><span id="lExact"></span> µH</strong></li>
-                         <li>峰值电流 (Ipk): <strong><span id="ipkDetail"></span> A</strong></li>
-                         <li>饱和电流 (Isat) 应 >= <strong><span id="isatRec"></span> A</strong></li>
+                        <li><span class="label">推荐范围:</span> <span class="value"><span id="lExact"></span> µH</span></li>
+                         <li><span class="label">峰值电流 (Ipk):</span> <span class="value"><span id="ipkDetail"></span> A</span></li>
+                         <li><span class="label">饱和电流 (Isat) ≥</span> <span class="value" style="color:var(--danger-color)"><span id="isatRec"></span> A</span></li>
                         <li><small>基于 40% 输入纹波电流</small></li>
                     </ul>
                 </div>
@@ -137,31 +296,31 @@
                     <h3>Cout (输出电容)</h3>
                     <div class="main-value"><span id="coutRec"></span> µF</div>
                     <ul class="details">
-                        <li>推荐范围: <strong><span id="coutExact"></span> µF</strong></li>
-                         <li>耐压值应 >= <strong><span id="coutVoltRec"></span> V</strong></li>
+                        <li><span class="label">推荐范围:</span> <span class="value"><span id="coutExact"></span> µF</span></li>
+                         <li><span class="label">耐压值 ≥</span> <span class="value" style="color:var(--danger-color)"><span id="coutVoltRec"></span> V</span></li>
                     </ul>
                 </div>
                 <div class="result-card">
                     <h3>Cin (输入电容)</h3>
+                    <div class="main-value">≥ 10 µF</div>
                      <ul class="details">
-                         <li>推荐值: <strong>≥ 10 µF</strong></li>
-                         <li>耐压值应 >= <strong><span id="cinVoltRec"></span> V</strong></li>
+                         <li><span class="label">耐压值 ≥</span> <span class="value" style="color:var(--danger-color)"><span id="cinVoltRec"></span> V</span></li>
                          <li><small>推荐使用 X7R 陶瓷电容</small></li>
                     </ul>
                 </div>
                 <div class="result-card">
                     <h3>功率分析 <small>(效率 85-95%)</small></h3>
                     <ul class="details">
-                         <li>输出功率 (Pout): <strong><span id="poutValue"></span> W</strong></li>
-                         <li>输入功率 (Pin): <strong><span id="pinValue"></span> W</strong></li>
-                         <li>系统损耗: <strong><span id="lossValue"></span> W</strong></li>
+                         <li><span class="label">输出功率 (Pout):</span> <span class="value"><span id="poutValue"></span> W</span></li>
+                         <li><span class="label">输入功率 (Pin):</span> <span class="value"><span id="pinValue"></span> W</span></li>
+                         <li><span class="label">系统损耗:</span> <span class="value"><span id="lossValue"></span> W</span></li>
                     </ul>
                 </div>
                  <div class="result-card">
                     <h3>D (续流二极管)</h3>
                      <ul class="details">
-                         <li>反向耐压 (Vr) >= <strong><span id="diodeVoltRec"></span> V</strong></li>
-                         <li>正向电流 (If) >= <strong><span id="diodeCurrRec"></span> A</strong></li>
+                         <li><span class="label">反向耐压 (Vr) ≥</span> <span class="value" style="color:var(--danger-color)"><span id="diodeVoltRec"></span> V</span></li>
+                         <li><span class="label">正向电流 (If) ≥</span> <span class="value" style="color:var(--danger-color)"><span id="diodeCurrRec"></span> A</span></li>
                          <li><small>需选用高速开关的肖特基二极管</small></li>
                     </ul>
                 </div>
