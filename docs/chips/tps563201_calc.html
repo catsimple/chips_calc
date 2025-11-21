@@ -146,6 +146,24 @@
         .result-card .details strong {
             color: var(--primary-color);
         }
+        /* Chip Specs Tags */
+        .chip-specs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .spec-tag {
+            background: #e7f1ff;
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border: 1px solid #b6d4fe;
+        }
         /* New styles for FB results list */
         #fb-results-list {
             list-style: none;
@@ -214,6 +232,15 @@
                  <span style="font-size:0.8em;">TPS563201 PCB示例</span>
             </a>
             <br></br>
+            <div class="chip-specs">
+                <span class="spec-tag">Buck 拓扑</span>
+                <span class="spec-tag">Vin: 4.5-17V</span>
+                <span class="spec-tag">Vout Max: 0.76-7V</span>
+                <span class="spec-tag">Fsw: 560kHz</span>
+                <span class="spec-tag">Isw Limit: 5.1A</span>
+                <span class="spec-tag">Iout Max: 3A</span>
+                <span class="spec-tag">D-CAP2™</span>     
+            </div>
             <div class="input-group">
                 <label for="inputVoltage">输入电压</label>
                 <div class="input-wrapper" id="vinWrapper">
