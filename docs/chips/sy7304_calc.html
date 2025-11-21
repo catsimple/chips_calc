@@ -202,8 +202,10 @@
             border: 1px solid var(--medium-gray);
             border-left: 4px solid var(--medium-gray);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column; /* Stack vertically */
+            justify-content: center;
+            align-items: flex-start;
+            gap: 4px;
         }
         #fb-results-list li:first-child {
             border-left-color: var(--success-color);
