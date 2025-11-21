@@ -17,6 +17,24 @@
         h1, h2, h3 { color: var(--primary-color); }
         h1 { border-bottom: 2px solid var(--medium-gray); padding-bottom: 10px; margin-top: 0; }
         h3 { margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--medium-gray); padding-bottom: 8px;}
+        /* Chip Specs Tags */
+        .chip-specs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .spec-tag {
+            background: #e7f1ff;
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border: 1px solid #b6d4fe;
+        }
         .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-gray); }
         .label-note { font-weight: normal; font-size: 0.8em; color: #6c757d; margin-left: 8px; }
@@ -49,6 +67,17 @@
         <div class="input-panel">
             <h1>TPS61088 参数设计</h1>
             <a href="https://oshwhub.com/catsimple/da-dan-qi" target="_blank" class="sub-link"><span style="font-size:0.8em;">TPS61088 PCB示例</span></a>
+            <div class="chip-specs">
+            <span class="spec-tag">Boost 拓扑</span>
+            <span class="spec-tag">Vin: 2.7-12V</span>
+            <span class="spec-tag">Vout: 4.5-12.6V</span>
+            <span class="spec-tag">Fsw: 200kHz-2.2MHz</span>
+            <span class="spec-tag">Isw Limit: 11A</span>
+            <span class="spec-tag">可编程开关频率</span> 
+            <span class="spec-tag">可选PWM/PFM模式</span> 
+            <span class="spec-tag">可编程软启动</span> 
+            <span class="spec-tag">可编程峰值电流限制</span> 
+            </div>
             <h3>核心参数</h3>
             <div class="input-group"><label for="vin_min">输入电压范围 (Vin)<small class="label-note">2.7V - 12V</small></label><div class="inline-group"><div class="input-wrapper" id="vinMinWrapper"><input type="number" step="0.1" id="vin_min" value="3.3" placeholder="Min"><span class="unit">V</span></div><div class="input-wrapper" id="vinMaxWrapper"><input type="number" step="0.1" id="vin_max" value="4.2" placeholder="Max"><span class="unit">V</span></div></div></div>
             <div class="inline-group">
