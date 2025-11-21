@@ -143,6 +143,25 @@
         .result-card .details strong {
             color: var(--primary-color);
         }
+        /* Chip Specs Tags */
+        .chip-specs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .spec-tag {
+            background: #e7f1ff;
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border: 1px solid #b6d4fe;
+        }
+        
         /* New styles for FB results list */
         #fb-results-list {
             list-style: none;
@@ -200,11 +219,21 @@
         <!-- Input Panel -->
         <div class="input-panel">
             <h1>TPS63020 设计参数</h1>
-            <p style="font-size:0.9em; color:#555;">一款高效单电感升降压 (Buck-Boost) 转换器。</p>
+            <p style="font-size:0.9em; color:#555;">具有 4A 开关的高效率单电感器降压/升压转换器</p>
             <a href="https://oshwhub.com/catsimple/tps63020-xiao-ban" target="_blank" class="sub-link">
                 <span style="font-size:0.8em;">TPS63020 PCB示例</span>
             </a>
             <p><p>
+            
+            <div class="chip-specs">
+                <span class="spec-tag">Buck/Boost 拓扑</span>
+                <span class="spec-tag">Vin: 1.8-5.5V</span>
+                <span class="spec-tag">Vout: 1.2-5.5V</span>
+                <span class="spec-tag">Fsw: 2.4MHz</span>
+                <span class="spec-tag">Isw Limit: 4.5A</span>
+                <span class="spec-tag">可选省电模式</span>
+            </div>
+
             <div class="input-group">
                 <label for="inputVoltageMin">最小输入电压 (Vin_min)</label>
                 <div class="input-wrapper" id="vinMinWrapper">
