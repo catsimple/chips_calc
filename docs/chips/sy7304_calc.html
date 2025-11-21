@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SY7304 升压芯片计算器</title>
+    <style>
+        :root {
+            --primary-color: #004EA2; 
+            --label-color: #4A90E2;   
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --border-color: #ced4da;
+            --error-bg-color: #f8d7da;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: #343a40;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 95%;
+            max-width: 1600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+        }
+        .input-panel {
+            flex: 1;
+            min-width: 320px;
+            padding: 30px;
+        }
+        .output-panel {
+            flex: 1.5;
+            padding: 30px;
+            background-color: #fcfdff;
+            border-left: 1px solid var(--medium-gray);
+        }
+        h1, h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-size: 1.2em;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            max-width: 400px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-gray);
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fff;
+        }
+        .input-wrapper:focus-within {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .input-wrapper.input-error {
+            border-color: var(--danger-color);
+        }
+        .input-wrapper input {
+            flex-grow: 1;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-size: 1.1em;
+            outline: none;
+        }
+        .input-wrapper .unit {
+            padding: 0 15px;
+            font-weight: 500;
+            color: var(--dark-gray);
+            background-color: var(--medium-gray);
+            border-left: 1px solid var(--border-color);
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .warning-text {
+            font-size: 0.85em;
+            color: var(--danger-color);
+            margin-top: 5px;
+            display: none;
+        }
+        .note-text {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        /* Chip Specs Tags */
+        .chip-specs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .spec-tag {
+            background: #e7f1ff;
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border: 1px solid #b6d4fe;
+        }
+
+        /* Results Grid */
+        #results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .result-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--medium-gray);
+            display: flex;
+            flex-direction: column;
+        }
+        .result-card .main-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .result-card .details {
+            font-size: 0.95em;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: #555;
+            flex-grow: 1;
+        }
+        .result-card .details li {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 4px;
+        }
+        .result-card .details li:last-child {
+            border-bottom: none;
+        }
+        .result-card .details .label {
+            color: var(--label-color);
+            font-weight: 600;
+            padding-right: 10px;
+        }
+        .result-card .details .value {
+            font-weight: bold;
+            text-align: right;
+        }
+
+        /* FB List */
+        #fb-results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        #fb-results-list li {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background-color: var(--light-gray);
+            font-size: 0.9em;
+            border: 1px solid var(--medium-gray);
+            border-left: 4px solid var(--medium-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #fb-results-list li:first-child {
+            border-left-color: var(--success-color);
+            background-color: #f0fff4; /* Slight green tint for best match */
+        }
+        
+        /* Messages */
+        .message-box {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .error-message {
+            background-color: var(--error-bg-color);
+            color: var(--danger-color);
+            border: 1px solid #f5c6cb;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--medium-gray);
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 992px) {
+            body { padding: 10px; }
+            .container { flex-direction: column; width: 100%; box-shadow: none; }
+            .input-panel { min-width: 0; padding: 20px; }
+            .output-panel { border-left: none; border-top: 1px solid var(--medium-gray); padding: 20px; }
+            .input-group { max-width: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Input Panel -->
+    <div class="input-panel">
+        <h1>SY7304 参数计算</h1>
+        <div class="chip-specs">
+            <span class="spec-tag">Boost 拓扑</span>
+            <span class="spec-tag">Vin: 3-33V</span>
+            <span class="spec-tag">Vout Max: 33V</span>
+            <span class="spec-tag">Fsw: 1MHz</span>
+            <span class="spec-tag">Isw Limit: 4A</span>
+        </div>
+
+        <div class="input-group">
+            <label for="inputVoltage">最小输入电压 (Vin Min)</label>
+            <div class="input-wrapper" id="vinWrapper">
+                <input type="number" id="inputVoltage" value="3.3" step="0.1">
+                <span class="unit">V</span>
+            </div>
+            <p class="note-text">按最差工况计算，建议填电池最低电压</p>
+            <p class="warning-text" id="vinWarning"></p>
+        </div>
+
+        <div class="input-group">
+            <label for="outputVoltage">目标输出电压 (Vout)</label>
+            <div class="input-wrapper" id="voutWrapper">
+                <input type="number" id="outputVoltage" value="12" step="0.1">
+                <span class="unit">V</span>
+            </div>
+             <p class="warning-text" id="voutWarning"></p>
+        </div>
+
+        <div class="input-group">
+            <label for="outputCurrent">最大负载电流 (Iout Max)</label>
+            <div class="input-wrapper" id="ioutWrapper">
+                <input type="number" id="outputCurrent" value="1.0" step="0.1">
+                <span class="unit">A</span>
+            </div>
+            <p class="note-text">用于计算电感饱和电流及峰值限制</p>
+            <p class="warning-text" id="ioutWarning"></p>
+        </div>
+    </div>
+
+    <!-- Output Panel -->
+    <div class="output-panel">
+        <h1>计算结果</h1>
+        <div id="results-container">
+            <!-- FB Resistors -->
+            <div class="result-card">
+                <h3>反馈电阻 (R1 / R2)</h3>
+                <p style="font-size:0.85em; color:#666; margin-bottom:10px; margin-top: -10px;">
+                    Vout = 0.6V * (R1/R2 + 1)<br>
+                    R1接Vout, R2接GND
+                </p>
+                <ul id="fb-results-list">
+                    <!-- JS Populated -->
+                </ul>
+            </div>
+
+            <!-- Inductor -->
+            <div class="result-card">
+                <h3>功率电感 (L)</h3>
+                <div class="main-value" id="lRec">--</div>
+                <ul class="details">
+                    <li><span class="label">纹波电流 (ΔIL):</span> <span class="value" id="rippleCurrent">--</span></li>
+                    <li><span class="label">电感峰值 (Ipk):</span> <span class="value" id="peakCurrent">--</span></li>
+                    <li><span class="label">推荐饱和 (Isat) ≥</span> <span class="value" style="color:var(--danger-color)" id="satCurrent">--</span></li>
+                    <li><span class="label">输入平均电流:</span> <span class="value" id="inputAvgCurrent">--</span></li>
+                </ul>
+            </div>
+
+            <!-- Capacitors -->
+            <div class="result-card">
+                <h3>外围电容</h3>
+                <ul class="details">
+                    <li>
+                        <span class="label">IN 引脚去耦:</span> 
+                        <span class="value" style="color:var(--danger-color)">1µF (紧靠引脚)</span>
+                    </li>
+                    <li>
+                        <span class="label">输入大电容 (Cin):</span> 
+                        <span class="value">10µF (陶瓷)</span>
+                    </li>
+                    <li>
+                        <span class="label">Cin 耐压 ≥</span> 
+                        <span class="value" id="cinVolt">25V</span>
+                    </li>
+                    <li>
+                        <span class="label">输出电容 (Cout):</span> 
+                        <span class="value">22µF x 2</span>
+                    </li>
+                    <li>
+                        <span class="label">Cout 耐压 ≥</span> 
+                        <span class="value" id="coutVolt">25V</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Diode -->
+            <div class="result-card">
+                <h3>续流二极管 (D1)</h3>
+                <div class="main-value" style="font-size:1.6em">Schottky</div>
+                <ul class="details">
+                    <li><span class="label">反向耐压 (Vr) ≥</span> <span class="value" id="diodeVr">--</span></li>
+                    <li><span class="label">平均电流 (If) ≥</span> <span class="value" id="diodeIf">--</span></li>
+                    <li><span class="label">建议:</span> <span class="value">SS34 / SS54</span></li>
+                </ul>
+            </div>
+        </div>
+        <div id="message-container"></div>
+    </div>
+</div>
+
+<footer>
+    <p>基于 SY7304 Rev.0.9 数据手册。计算结果仅供参考，请以实际测试为准。</p>
+    <a href="https://github.com/catsimple/chips_calc" target="_blank" rel="noopener noreferrer" title="View on GitHub" class="github-link">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="24" height="24">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"></path>
+        </svg>
+    </a>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Constants from Datasheet
+    const V_REF = 0.6;        // V
+    const F_SW = 1000000;     // 1MHz
+    const I_LIM_MIN = 4.0;    // A (Min switch current limit)
+    const EFFICIENCY = 0.90;  // Estimated Efficiency
+    const RIPPLE_RATIO = 0.3; // Target 30% ripple
+    const MAX_DUTY = 0.90;
+    
+    // Elements
+    const el = {
+        vin: document.getElementById('inputVoltage'),
+        vout: document.getElementById('outputVoltage'),
+        iout: document.getElementById('outputCurrent'),
+        vinWrapper: document.getElementById('vinWrapper'),
+        voutWrapper: document.getElementById('voutWrapper'),
+        ioutWrapper: document.getElementById('ioutWrapper'),
+        vinWarn: document.getElementById('vinWarning'),
+        voutWarn: document.getElementById('voutWarning'),
+        ioutWarn: document.getElementById('ioutWarning'),
+        fbList: document.getElementById('fb-results-list'),
+        lRec: document.getElementById('lRec'),
+        rippleI: document.getElementById('rippleCurrent'),
+        peakI: document.getElementById('peakCurrent'),
+        satI: document.getElementById('satCurrent'),
+        inAvgI: document.getElementById('inputAvgCurrent'),
+        cinVolt: document.getElementById('cinVolt'),
+        coutVolt: document.getElementById('coutVolt'),
+        diodeVr: document.getElementById('diodeVr'),
+        diodeIf: document.getElementById('diodeIf'),
+        msgBox: document.getElementById('message-container'),
+        resContainer: document.getElementById('results-container')
+    };
+
+    // Standard Resistor Series (E96 + E24 Mix mostly used)
+    const RESISTORS = [
+        1, 1.2, 1.5, 1.8, 2, 2.2, 2.4, 2.7, 3, 3.3, 3.6, 3.9, 4.3, 4.7, 4.99, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1,
+        10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39, 43, 47, 49.9, 51, 56, 62, 68, 75, 82, 91,
+        100, 110, 120, 130, 150, 160, 180, 200, 220, 240, 270, 300, 330, 360, 390, 430, 470, 510, 560, 620, 680, 750, 820, 910
+    ]; // kOhm values
+
+    function findNextVoltage(v) {
+        const ratings = [6.3, 10, 16, 25, 35, 50];
+        return ratings.find(r => r >= v) || 50;
+    }
+
+    function calc() {
+        // Reset UI
+        el.vinWrapper.classList.remove('input-error');
+        el.voutWrapper.classList.remove('input-error');
+        el.ioutWrapper.classList.remove('input-error');
+        el.vinWarn.style.display = 'none';
+        el.voutWarn.style.display = 'none';
+        el.ioutWarn.style.display = 'none';
+        el.msgBox.innerHTML = '';
+        el.resContainer.style.opacity = '1';
+
+        const vin = parseFloat(el.vin.value);
+        const vout = parseFloat(el.vout.value);
+        const iout = parseFloat(el.iout.value);
+
+        // Basic Validation
+        if (isNaN(vin) || isNaN(vout) || isNaN(iout)) return;
+
+        let isValid = true;
+        let hardStop = false;
+
+        // Vin Range Check (3V - 33V)
+        if (vin < 3 || vin > 33) {
+            el.vinWarn.textContent = "输入电压必须在 3V - 33V 之间";
+            el.vinWarn.style.display = 'block';
+            el.vinWrapper.classList.add('input-error');
+            isValid = false;
+        }
+
+        // Vout Logic
+        if (vout > 33) {
+            el.voutWarn.textContent = "输出电压不能超过 33V";
+            el.voutWarn.style.display = 'block';
+            el.voutWrapper.classList.add('input-error');
+            hardStop = true;
+        }
+        if (vout < vin) {
+            el.voutWarn.textContent = "升压芯片输出电压必须大于输入电压";
+            el.voutWarn.style.display = 'block';
+            el.voutWrapper.classList.add('input-error');
+            hardStop = true;
+        }
+
+        if (hardStop) {
+            el.resContainer.style.opacity = '0.5';
+            return;
+        }
+
+        // --- FB Resistor Calculation ---
+        // Vout = 0.6 * (R1/R2 + 1)  =>  R1 = R2 * (Vout/0.6 - 1)
+        const ratio = (vout / V_REF) - 1;
+        let combinations = [];
+
+        RESISTORS.forEach(r2 => { // Iterate R2 (kOhm)
+            let r1_ideal = r2 * ratio;
+            // Find closest standard resistor for R1
+            let r1 = RESISTORS.reduce((prev, curr) => 
+                Math.abs(curr - r1_ideal) < Math.abs(prev - r1_ideal) ? curr : prev
+            );
+            
+            let vout_calc = V_REF * (r1/r2 + 1);
+            let err = Math.abs((vout_calc - vout) / vout) * 100;
+
+            if (err < 2.0) { // Only show if error < 2%
+                combinations.push({r1, r2, vout: vout_calc, err});
+            }
+        });
+
+        combinations.sort((a, b) => a.err - b.err);
+        
+        // Render FB List
+        el.fbList.innerHTML = '';
+        if (combinations.length === 0) {
+            el.fbList.innerHTML = '<li>无法找到误差 <2% 的标准电阻组合，建议使用电位器。</li>';
+        } else {
+            combinations.slice(0, 4).forEach((c, idx) => {
+                let html = `
+                    <span><strong>R1:</strong> ${c.r1}kΩ / <strong>R2:</strong> ${c.r2}kΩ</span>
+                    <span>Vout: ${c.vout.toFixed(2)}V (${c.err.toFixed(2)}%)</span>
+                `;
+                let li = document.createElement('li');
+                li.innerHTML = html;
+                el.fbList.appendChild(li);
+            });
+        }
+
+        // --- Inductor & Current Calculation (Boost Mode) ---
+        // 1. Duty Cycle
+        // D = (Vout - Vin*Efficiency) / Vout  <-- More accurate for current calc
+        // Standard D = (Vout - Vin) / Vout
+        const duty = (vout - vin) / vout;
+        
+        if (duty > MAX_DUTY) {
+             el.msgBox.innerHTML = `<div class="message-box error-message">警告：占空比 (${(duty*100).toFixed(1)}%) 超过芯片极限 (90%)。请输入更高的 Vin 或降低 Vout。</div>`;
+             isValid = false;
+        }
+
+        // 2. Average Input Current (Inductor DC Current)
+        // Pin = Pout / Efficiency
+        // Vin * Iin = (Vout * Iout) / Eff
+        const i_in_avg = (vout * iout) / (vin * EFFICIENCY);
+
+        // 3. Ripple Current Recommendation (30% of I_in)
+        const target_ripple = i_in_avg * RIPPLE_RATIO;
+
+        // 4. Calculate Inductor L
+        // L = (Vin * (Vout - Vin)) / (Delta_I * Fsw * Vout)
+        let l_calc_h = (vin * (vout - vin)) / (target_ripple * F_SW * vout);
+        let l_calc_uh = l_calc_h * 1e6;
+
+        // Round to standard values: 1.0, 2.2, 3.3, 4.7, 6.8, 10
+        const std_inductors = [1.0, 2.2, 3.3, 4.7, 6.8, 10, 15, 22];
+        let l_final = std_inductors.reduce((prev, curr) => 
+            Math.abs(curr - l_calc_uh) < Math.abs(prev - l_calc_uh) ? curr : prev
+        );
+        
+        // 4.7uH is very common for this chip 5->12V, bias towards it if close
+        if (l_calc_uh > 3.5 && l_calc_uh < 6.0) l_final = 4.7;
+
+        // 5. Recalculate Real Ripple and Peak with chosen L
+        const real_ripple = (vin * (vout - vin)) / ((l_final * 1e-6) * F_SW * vout);
+        const peak_current = i_in_avg + (real_ripple / 2);
+        const sat_recommend = peak_current * 1.3; // 30% margin
+
+        // Render Inductor Data
+        el.lRec.textContent = l_final + " µH";
+        el.rippleI.textContent = real_ripple.toFixed(2) + " A";
+        el.peakI.textContent = peak_current.toFixed(2) + " A";
+        el.satI.textContent = sat_recommend.toFixed(1) + " A";
+        el.inAvgI.textContent = i_in_avg.toFixed(2) + " A";
+
+        // --- CRITICAL CHECK: Switch Current Limit ---
+        if (peak_current > I_LIM_MIN) {
+             el.peakI.style.color = "var(--danger-color)";
+             el.msgBox.innerHTML += `<div class="message-box error-message">
+                严重警告：计算得出的电感峰值电流 (${peak_current.toFixed(2)}A) 超过了芯片的开关电流限制 (4A)。<br>
+                芯片可能会触发过流保护或无法带动负载。<br>
+                建议：提高输入电压 Vin 或 减小负载电流 Iout。
+             </div>`;
+        } else {
+             el.peakI.style.color = "#333";
+        }
+
+        // --- Capacitor & Diode Ratings ---
+        el.cinVolt.textContent = findNextVoltage(vin * 1.2) + " V";
+        el.coutVolt.textContent = findNextVoltage(vout * 1.2) + " V";
+
+        el.diodeVr.textContent = findNextVoltage(vout * 1.2) + " V";
+        el.diodeIf.textContent = iout.toFixed(1) + " A (Avg)";
+
+    }
+
+    // Bind events
+    [el.vin, el.vout, el.iout].forEach(input => {
+        input.addEventListener('input', calc);
+    });
+
+    // Initial run
+    calc();
+});
+</script>
+
+</body>
+</html>
