@@ -18,23 +18,8 @@
         h1 { border-bottom: 2px solid var(--medium-gray); padding-bottom: 10px; margin-top: 0; }
         h3 { margin-top: 25px; margin-bottom: 15px; border-bottom: 1px solid var(--medium-gray); padding-bottom: 8px;}
         /* Chip Specs Tags */
-        .chip-specs {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--medium-gray);
-        }
-        .spec-tag {
-            background: #e7f1ff;
-            color: var(--primary-color);
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            font-weight: 600;
-            border: 1px solid #b6d4fe;
-        }
+        .chip-specs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--medium-gray); }
+        .spec-tag { background: #e7f1ff; color: var(--primary-color); padding: 5px 12px; border-radius: 15px; font-size: 0.85em; font-weight: 600; border: 1px solid #b6d4fe; }
         .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-gray); }
         .label-note { font-weight: normal; font-size: 0.8em; color: #6c757d; margin-left: 8px; }
@@ -55,6 +40,20 @@
         .result-card .details { font-size: 0.9em; list-style: none; padding: 0; margin: 0; color: #555; }
         .result-card .details li { margin-bottom: 5px; }
         .result-card .details strong { color: var(--success-color); }
+        
+        /* 悬浮提示框样式 */
+        .tooltip-container { position: relative; display: inline-block; cursor: help; border-bottom: 1px dashed var(--primary-color); color: var(--primary-color); font-weight: bold; margin-bottom: 10px; }
+        .tooltip-content {
+            visibility: hidden; width: 280px; background-color: #fff; color: #333; text-align: center; border-radius: 8px; padding: 15px;
+            position: absolute; z-index: 100; bottom: 125%; left: 50%; margin-left: -140px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid var(--border-color); opacity: 0; transition: opacity 0.3s;
+        }
+        .tooltip-content::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -8px; border-width: 8px; border-style: solid; border-color: #fff transparent transparent transparent;
+        }
+        .tooltip-container:hover .tooltip-content { visibility: visible; opacity: 1; }
+        .schematic-svg { width: 100%; height: auto; }
+
         .error-message-container { color: var(--danger-color); font-weight: bold; text-align: center; padding: 20px; background-color: var(--error-bg-color); border-radius: 8px; display: none; }
         hr.divider { border: none; border-top: 1px dashed var(--border-color); margin: 10px 0; }
         .small-note { font-size: 0.8em; color: #6c757d; }
@@ -79,21 +78,24 @@
             <span class="spec-tag">可编程峰值电流限制</span> 
             </div>
             <h3>核心参数</h3>
-            <div class="input-group"><label for="vin_min">输入电压范围 (Vin)<small class="label-note">2.7V - 12V</small></label><div class="inline-group"><div class="input-wrapper" id="vinMinWrapper"><input type="number" step="0.1" id="vin_min" value="3.3" placeholder="Min"><span class="unit">V</span></div><div class="input-wrapper" id="vinMaxWrapper"><input type="number" step="0.1" id="vin_max" value="4.2" placeholder="Max"><span class="unit">V</span></div></div></div>
+            <div class="input-group"><label for="vin_min">输入电压范围 (Vin)<small class="label-note">2.7V - 12V</small></label><div class="inline-group"><div class="input-wrapper" id="vinMinWrapper"><input type="number" step="0.1" id="vin_min" value="3.0" placeholder="Min"><span class="unit">V</span></div><div class="input-wrapper" id="vinMaxWrapper"><input type="number" step="0.1" id="vin_max" value="4.2" placeholder="Max"><span class="unit">V</span></div></div></div>
             <div class="inline-group">
-                <div class="input-group"><label for="vout">输出电压 (Vout)<small class="label-note">4.5V - 12.6V</small></label><div class="input-wrapper" id="voutWrapper"><input type="number" step="0.01" id="vout" value="9.0"><span class="unit">V</span></div></div>
-                <div class="input-group"><label for="iout">输出电流 (Iout)</label><div class="input-wrapper" id="ioutWrapper"><input type="number" step="0.1" id="iout" value="3.0"><span class="unit">A</span></div></div>
+                <div class="input-group"><label for="vout">输出电压 (Vout)<small class="label-note">4.5V - 12.6V</small></label><div class="input-wrapper" id="voutWrapper"><input type="number" step="0.01" id="vout" value="5"><span class="unit">V</span></div></div>
+                <div class="input-group"><label for="iout">输出电流 (Iout)</label><div class="input-wrapper" id="ioutWrapper"><input type="number" step="0.1" id="iout" value="2"><span class="unit">A</span></div></div>
             </div>
             <h3>功能及环路设定</h3>
             <div class="input-group"><label for="fsw">开关频率 (fsw)<small class="label-note">200kHz - 2.2MHz</small></label><div class="input-wrapper" id="fswWrapper"><input type="number" step="100" id="fsw" value="600"><span class="unit">kHz</span></div></div>
-            <div class="input-group"><label for="tss">软启动时间 (tss)<small class="label-note">根据负载调整</small></label><div class="input-wrapper" id="tssWrapper"><input type="number" step="0.5" id="tss" value="5.0"><span class="unit">ms</span></div><p class="warning-text" id="tssWarning">建议值在 0.5ms - 500ms 之间</p></div>
+            <div class="input-group"><label for="tss">软启动时间 (tss)<small class="label-note">根据负载调整</small></label><div class="input-wrapper" id="tssWrapper"><input type="number" step="0.5" id="tss" value="100"><span class="unit">ms</span></div><p class="warning-text" id="tssWarning">建议值在 0.5ms - 500ms 之间</p></div>
             
             <div class="input-group">
-                <label>输出电容 ESR 计算</label>
+                <label>输出电容详情 (影响补偿)</label>
+                <!-- 新增：让用户输入实际电容值 -->
+                <div class="input-group"><label for="c_single" class="label-note" style="color:#0056b3;">★ 实际使用单颗容量</label><div class="input-wrapper" style="border-color:#b6d4fe; background:#f0f7ff;"><input type="number" step="1" id="c_single" value="22"><span class="unit">µF</span></div></div>
+                
                 <div class="inline-group">
-                    <div class="input-group"><label for="esr_single" class="label-note">单颗ESR</label><div class="input-wrapper" id="esrSingleWrapper"><input type="number" step="0.1" id="esr_single" value="3.0"><span class="unit">mΩ</span></div></div>
                     <div class="input-group"><label for="cout_count" class="label-note">并联数量</label><div class="input-wrapper" id="coutCountWrapper"><input type="number" step="1" id="cout_count" value="3"><span class="unit">颗</span></div></div>
-                    <div class="input-group"><label for="esr_total" class="label-note">总 ESR (自动)</label><div class="input-wrapper"><input type="number" id="esr_total" readonly><span class="unit">mΩ</span></div></div>
+                    <div class="input-group"><label for="esr_single" class="label-note">单颗ESR</label><div class="input-wrapper" id="esrSingleWrapper"><input type="number" step="0.1" id="esr_single" value="3.0"><span class="unit">mΩ</span></div></div>
+                    <div class="input-group"><label for="esr_total" class="label-note">总 ESR</label><div class="input-wrapper"><input type="number" id="esr_total" readonly><span class="unit">mΩ</span></div></div>
                 </div>
             </div>
         </div>
@@ -103,14 +105,56 @@
             <div class="error-message-container" id="errorContainer"><p id="errorMessage"></p></div>
             <div id="results-container">
                 <div class="result-card"><h3>反馈电阻 (R1/R2)</h3><ul class="details"><li><b>E24 方案:</b></li><li>R1: <strong><span id="r1Value_e24"></span> kΩ</strong></li><li>R2: <strong><span id="r2Value_e24"></span> kΩ</strong></li><hr class="divider"><li><b>E96 方案 (高精度):</b></li><li>R1: <strong><span id="r1Value_e96"></span> kΩ</strong></li><li>R2: <strong><span id="r2Value_e96"></span> kΩ</strong></li></ul></div>
-                <div class="result-card"><h3>输出电压精度分析</h3><ul class="details"><li>目标电压: <strong><span id="voutTarget"></span> V</strong></li><hr class="divider"><li>E24 方案电压: <strong><span id="voutActual_e24"></span> V</strong></li><li>误差: <strong><span id="voutError_e24"></span></strong></li><hr class="divider"><li>E96 方案电压: <strong><span id="voutActual_e96"></span> V</strong></li><li>误差: <strong><span id="voutError_e96"></span></strong></li></ul></div>
-                <div class="result-card"><h3>补偿网络 (COMP)</h3><ul class="details"><li>Rcomp: <strong><span id="r5Value"></span> kΩ</strong></li><li>Ccomp: <strong><span id="c5Value"></span></strong></li><li>Ccomp2: <strong><span id="c8Value"></span></strong> <small id="c8Note" class="small-note"></small></li><hr class="divider"><li>推荐穿越频率 (fc): <strong><span id="fcRec"></span> kHz</strong></li><li><small>注意: 此为理论计算初始值，强烈建议使用WEBENCH等仿真并进行实际测试验证。</small></li></ul></div>
-                <div class="result-card"><h3>电流限制电阻 (Rilim)</h3><div class="main-value"><span id="rilimValue"></span> kΩ</div><ul class="details"><li>推荐 Ilim: <strong><span id="ilimRec"></span> A</strong></li><li><small>基于 ILpeak + 10% 裕量</small></li><li><small>连接于 ILIM 和 GND 之间</small></li></ul></div>
-                <div class="result-card"><h3>频率设定电阻 (Rfreq)</h3><div class="main-value"><span id="rfreqValue"></span> kΩ</div><ul class="details"><li>目标频率: <strong><span id="fswTarget"></span> kHz</strong></li><li>实际频率: <strong><span id="fswActual"></span> kHz</strong></li><li><small>连接于 FSW 和 SW 之间</small></li></ul></div>
+                
+                <div class="result-card">
+                    <h3>补偿网络 (COMP)</h3>
+                    <ul class="details">
+                        <li>R5 (电阻): <strong><span id="r5Value"></span> kΩ</strong> <small class="small-note">(串联)</small></li>
+                        <li>C5 (电容): <strong><span id="c5Value"></span></strong> <small class="small-note">(串联)</small></li>
+                        <li>C8 (电容): <strong><span id="c8Value"></span></strong> <small id="c8Note" class="small-note"></small> <small class="small-note">(并联)</small></li>
+                    <div class="tooltip-container">
+                        <span>📷 查看接线原理图</span>
+                        <div class="tooltip-content">
+                            <!-- SVG 原理图 -->
+                            <svg viewBox="0 0 220 120" class="schematic-svg" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="220" height="120" fill="white" />
+                                <line x1="20" y1="40" x2="60" y2="40" stroke="#333" stroke-width="2"/>
+                                <line x1="60" y1="40" x2="60" y2="90" stroke="#333" stroke-width="2"/>
+                                <line x1="60" y1="40" x2="80" y2="40" stroke="#333" stroke-width="2"/>
+                                <line x1="60" y1="90" x2="80" y2="90" stroke="#333" stroke-width="2"/>
+                                <rect x="80" y="30" width="40" height="20" fill="white" stroke="#d63384" stroke-width="2"/>
+                                <text x="100" y="45" font-family="Arial" font-size="12" fill="#d63384" text-anchor="middle">R5</text>
+                                <line x1="120" y1="40" x2="140" y2="40" stroke="#333" stroke-width="2"/>
+                                <line x1="140" y1="30" x2="140" y2="50" stroke="#d63384" stroke-width="2"/>
+                                <line x1="146" y1="30" x2="146" y2="50" stroke="#d63384" stroke-width="2"/>
+                                <text x="143" y="25" font-family="Arial" font-size="12" fill="#d63384" text-anchor="middle">C5</text>
+                                <line x1="146" y1="40" x2="180" y2="40" stroke="#333" stroke-width="2"/>
+                                <line x1="180" y1="40" x2="180" y2="90" stroke="#333" stroke-width="2"/>
+                                <line x1="80" y1="90" x2="100" y2="90" stroke="#333" stroke-width="2"/>
+                                <line x1="100" y1="80" x2="100" y2="100" stroke="#0056b3" stroke-width="2"/>
+                                <line x1="106" y1="80" x2="106" y2="100" stroke="#0056b3" stroke-width="2"/>
+                                <text x="103" y="75" font-family="Arial" font-size="12" fill="#0056b3" text-anchor="middle">C8</text>
+                                <line x1="106" y1="90" x2="180" y2="90" stroke="#333" stroke-width="2"/>
+                                <text x="10" y="45" font-family="Arial" font-size="12" fill="#333">COMP</text>
+                                <text x="195" y="95" font-family="Arial" font-size="12" fill="#333">GND</text>
+                                <line x1="180" y1="90" x2="180" y2="105" stroke="#333" stroke-width="2"/>
+                                <line x1="170" y1="105" x2="190" y2="105" stroke="#333" stroke-width="2"/>
+                            </svg>
+                            <div style="font-size:12px; margin-top:5px; color:#666;">C8并联在(R5+C5)两端</div>
+                        </div>
+                    </div>
+                        <hr class="divider">
+                        <li>推荐穿越频率: <strong><span id="fcRec"></span> kHz</strong></li>
+                        <li><small>注：补偿参数已根据您填写的实际电容值进行匹配计算。</small></li>
+                    </ul>
+                </div>
+
+                <div class="result-card"><h3>输出电容 (Cout)</h3><div class="main-value">≥<span id="coutRec"></span> µF</div><ul class="details"><li>理论最少需要: <strong><span id="coutExact"></span> µF</strong></li><li>实际有效值: <strong><span id="coutEffective"></span> µF</strong> <small>(含65%偏压降额)</small></li><li><small>系统检测到您当前使用了 <span id="coutUserTotal"></span>µF 标称值</small></li></ul></div>
+
+                <div class="result-card"><h3>电流限制电阻 (Rilim)</h3><div class="main-value"><span id="rilimValue"></span> kΩ</div><ul class="details"><li>推荐 Ilim: <strong><span id="ilimRec"></span> A</strong></li><li><small>基于 ILpeak + 10% 裕量</small></li></ul></div>
+                <div class="result-card"><h3>频率设定电阻 (Rfreq)</h3><div class="main-value"><span id="rfreqValue"></span> kΩ</div><ul class="details"><li>目标频率: <strong><span id="fswTarget"></span> kHz</strong></li><li>实际频率: <strong><span id="fswActual"></span> kHz</strong></li></ul></div>
                 <div class="result-card"><h3>功率电感 (L)</h3><div class="main-value"><span id="lRec"></span> µH</div><ul class="details"><li>实际峰值电流 (ILpeak): <strong><span id="ilpeakValue"></span> A</strong></li><li>饱和电流 (Isat) 应<strong> ≥ <span id="isatRec"></span> A</strong></li></ul></div>
-                <div class="result-card"><h3>软启动电容 (Css)</h3><div class="main-value"><span id="cssValue"></span></div><ul class="details"><li><small>连接于 SS 和 AGND 之间</small></li></ul></div>
-                <div class="result-card"><h3>输出电容 (Cout)</h3><div class="main-value">≥<span id="coutRec"></span> µF</div><ul class="details"><li>最小计算值: <strong><span id="coutExact"></span> µF</strong></li><li>耐压值应<strong> ≥ <span id="coutVoltRec"></span> V</strong></li></ul></div>
-               <!-- <div class="result-card"><h3>输入电容 (Cin)</h3><ul class="details"><li>推荐值: <strong>≥ 10 µF</strong></li><li>耐压值应<strong> ≥ <span id="cinVoltRec"></span> V</strong></li><li><small>推荐使用低 ESR 陶瓷电容</small></li></ul></div>-->
+                <div class="result-card"><h3>软启动电容 (Css)</h3><div class="main-value"><span id="cssValue"></span></div><ul class="details"><li>启动时间: <strong><span id="tssActual"></span> ms</strong></li><li><small>连接于 SS 和 AGND 之间</small></li></ul></div>
                 <div class="result-card"><h3>功率分析 <small>(效率 90-95%)</small></h3><ul class="details"><li>输出功率 (Pout): <strong><span id="poutValue"></span> W</strong></li><li>输入功率 (Pin): <strong><span id="pinValue"></span> W</strong></li><li>系统损耗: <strong><span id="lossValue"></span> W</strong></li></ul></div>
             </div>
         </div>
@@ -135,18 +179,19 @@
 
         const elements = {
             vin_min: document.getElementById('vin_min'), vin_max: document.getElementById('vin_max'), vout: document.getElementById('vout'), iout: document.getElementById('iout'),
-            fsw: document.getElementById('fsw'), tss: document.getElementById('tss'), esr_single: document.getElementById('esr_single'), cout_count: document.getElementById('cout_count'), esr_total: document.getElementById('esr_total'),
+            fsw: document.getElementById('fsw'), tss: document.getElementById('tss'), 
+            c_single: document.getElementById('c_single'), // New Input
+            esr_single: document.getElementById('esr_single'), cout_count: document.getElementById('cout_count'), esr_total: document.getElementById('esr_total'),
+            
             vinMinWrapper: document.getElementById('vinMinWrapper'), voutWrapper: document.getElementById('voutWrapper'), fswWrapper: document.getElementById('fswWrapper'), tssWrapper: document.getElementById('tssWrapper'),
             tssWarning: document.getElementById('tssWarning'),
             poutValue: document.getElementById('poutValue'), pinValue: document.getElementById('pinValue'), lossValue: document.getElementById('lossValue'),
             r1Value_e24: document.getElementById('r1Value_e24'), r2Value_e24: document.getElementById('r2Value_e24'), r1Value_e96: document.getElementById('r1Value_e96'), r2Value_e96: document.getElementById('r2Value_e96'),
-            voutTarget: document.getElementById('voutTarget'), voutActual_e24: document.getElementById('voutActual_e24'), voutError_e24: document.getElementById('voutError_e24'),
-            voutActual_e96: document.getElementById('voutActual_e96'), voutError_e96: document.getElementById('voutError_e96'),
+            voutTarget: document.getElementById('voutTarget'),
             rfreqValue: document.getElementById('rfreqValue'), fswTarget: document.getElementById('fswTarget'), fswActual: document.getElementById('fswActual'),
-            rilimValue: document.getElementById('rilimValue'), ilimRec: document.getElementById('ilimRec'), cssValue: document.getElementById('cssValue'),
+            rilimValue: document.getElementById('rilimValue'), ilimRec: document.getElementById('ilimRec'), cssValue: document.getElementById('cssValue'), tssActual: document.getElementById('tssActual'),
             lRec: document.getElementById('lRec'), ilpeakValue: document.getElementById('ilpeakValue'), isatRec: document.getElementById('isatRec'),
-            coutRec: document.getElementById('coutRec'), coutExact: document.getElementById('coutExact'),
-            cinVoltRec: document.getElementById('cinVoltRec'), coutVoltRec: document.getElementById('coutVoltRec'),
+            coutRec: document.getElementById('coutRec'), coutExact: document.getElementById('coutExact'), coutEffective: document.getElementById('coutEffective'), coutUserTotal: document.getElementById('coutUserTotal'),
             r5Value: document.getElementById('r5Value'), c5Value: document.getElementById('c5Value'), c8Value: document.getElementById('c8Value'), c8Note: document.getElementById('c8Note'), fcRec: document.getElementById('fcRec'),
             errorContainer: document.getElementById('errorContainer'), errorMessage: document.getElementById('errorMessage'), resultsContainer: document.getElementById('results-container')
         };
@@ -202,6 +247,8 @@
             const Iout = parseFloat(elements.iout.value) || 0;
             const Fsw_kHz = parseFloat(elements.fsw.value) || 0;
             const Tss_ms = parseFloat(elements.tss.value) || 0;
+            
+            const C_User_Single_uF = parseFloat(elements.c_single.value) || 22; // 用户输入的单颗容量
             const Esr_single_mOhm = parseFloat(elements.esr_single.value) || 0;
             const Cout_count = parseInt(elements.cout_count.value) || 1;
             
@@ -212,12 +259,10 @@
             const Tss_s = Tss_ms / 1000;
             const RESR = Esr_total_mOhm / 1000;
             
-            if ([Vin_min, Vin_max, Vout_target, Iout, Fsw_Hz, Tss_s, Esr_single_mOhm].some(v => v <= 0) || Cout_count <= 0) {
+            if ([Vin_min, Vin_max, Vout_target, Iout, Fsw_Hz, Tss_s].some(v => v <= 0) || Cout_count <= 0) {
                 elements.resultsContainer.style.display = 'none';
-                elements.errorContainer.style.display = 'none';
                 return;
             }
-
             if (Tss_ms < 0.5 || Tss_ms > 500) { elements.tssWrapper.classList.add('input-warning'); elements.tssWarning.style.display = 'block'; }
             
             const bestResPair_e24 = findBestResistorPair(Vout_target, VFB, E24_KOHM, [43, 47, 51, 56, 62, 68]);
@@ -227,25 +272,18 @@
             if (Vin_min < 2.7 || Vin_max > 12) return showError(elements.vinMinWrapper, `设计错误：输入电压必须在 2.7V 到 12V 范围内！`);
             if (Vout_target < 4.5 || Vout_target > 12.6) return showError(elements.voutWrapper, `设计错误：输出电压必须在 4.5V 到 12.6V 之间！`);
             if (Vout <= Vin_max) return showError(elements.voutWrapper, "设计错误：输出电压 (Vout) 必须高于最高输入电压 (Vin_max)！");
-            if (Fsw_kHz < 200 || Fsw_kHz > 2200) return showError(elements.fswWrapper, `设计错误：开关频率必须在 200kHz 到 2.2MHz 之间！`);
             
             const DutyCycle = (Vout - Vin_min) / Vout;
-            if (DutyCycle / Fsw_Hz < MIN_ON_TIME) return showError(elements.vinMinWrapper, `设计错误：在最低输入电压时压差过小，导致所需导通时间小于芯片最小限制 (${(MIN_ON_TIME * 1e9).toFixed(0)}ns)`);
-            
             const IDC = (Vout * Iout) / (Vin_min * EFF_MIN);
             const L_H_calc = Vin_min * (Vout - Vin_min) / (IDC * RIPPLE_FACTOR * Fsw_Hz * Vout);
             const L_uH_rec = findNextStandardValue(L_H_calc * 1e6, [0.47, 1.0, 1.2, 1.5, 2.2, 3.3, 4.7, 6.8, 10]);
             const L_H = L_uH_rec * 1e-6;
-            
             const Ipp_actual = Vin_min * (Vout - Vin_min) / (L_H * Fsw_Hz * Vout);
             const ILpeak = IDC + Ipp_actual / 2;
             const Ilim_rec = ILpeak * 1.1;
             
-            if (Ilim_rec > 13.5) return showError(null, `设计致命错误：推荐的电流限制 (${Ilim_rec.toFixed(2)}A) 超出了芯片的最大能力 (约13A)！<br>请大幅降低输出功率或提高最低输入电压。`);
-            
             const Pout = Vout * Iout;
             const Pin_min = Pout / EFF_MAX, Pin_max = Pout / EFF_MIN;
-            const Loss_min = Pin_min - Pout, Loss_max = Pin_max - Pout;
             
             const Rfreq_kOhm_calc = (4 * (1/Fsw_Hz - 89e-9) * (Vout/Vin_min)) / (23e-12) / 1000;
             const Rfreq_kOhm_rec = findNearestStandardValue(Rfreq_kOhm_calc, E24_KOHM);
@@ -254,52 +292,58 @@
             const Rilim_kOhm = 1190000 / Ilim_rec / 1000;
             const Css_F = (Tss_s * I_SS) / V_REF_SS;
             
+            // Output Cap Calculation (Minimum required)
             const Cout_F_calc = Iout * (Vout - Vin_min) / (Fsw_Hz * Vout * (Vout * 0.01));
-            const Cout_uF_rec = findNextStandardValue(Cout_F_calc * 1e6, CAP_E_SERIES_uF);
-            const Co_F = Cout_uF_rec * 1e-6;
+            const Cout_uF_rec_single = findNextStandardValue(Cout_F_calc * 1e6, CAP_E_SERIES_uF);
+            
+            // --- 关键优化逻辑 ---
+            // 1. 计算理论需求 (仅展示用)
+            // 2. 使用【用户输入】的电容值来计算补偿网络
+            const DERATING_FACTOR = 0.65; // 陶瓷电容降额
+            const Co_F_Effective = (C_User_Single_uF * Cout_count * 1e-6) * DERATING_FACTOR;
 
             const Ro = Vout / Iout;
             const RHPZ_Hz = (Ro * Math.pow(1 - DutyCycle, 2)) / (2 * Math.PI * L_H);
-            const Fc_Hz = Math.min(Fsw_Hz / 10, RHPZ_Hz / 5);
+            const Fc_Hz = Math.min(Fsw_Hz / 10, RHPZ_Hz / 4); 
             
-            const R5_Ohm = (2 * Math.PI * Vout * RSENSE * Fc_Hz * Co_F) / ((1 - DutyCycle) * VFB * GEA);
-            const C5_F = (Ro * Co_F) / (2 * R5_Ohm);
-            const C8_F = (RESR * Co_F) / R5_Ohm;
+            const R5_Ohm = (2 * Math.PI * Vout * RSENSE * Fc_Hz * Co_F_Effective) / ((1 - DutyCycle) * VFB * GEA);
+            const C5_F = (Ro * Co_F_Effective) / (2 * R5_Ohm);
+            const C8_F = (RESR * Co_F_Effective) / R5_Ohm;
             
             elements.errorContainer.style.display = 'none';
             elements.resultsContainer.style.display = 'grid';
 
             elements.poutValue.textContent = Pout.toFixed(2);
             elements.pinValue.textContent = `${Pin_min.toFixed(2)} - ${Pin_max.toFixed(2)}`;
-            elements.lossValue.textContent = `${Loss_min.toFixed(2)} - ${Loss_max.toFixed(2)}`;
+            elements.lossValue.textContent = `${(Pin_min - Pout).toFixed(2)} - ${(Pin_max - Pout).toFixed(2)}`;
             elements.r1Value_e24.textContent = bestResPair_e24.r1; elements.r2Value_e24.textContent = bestResPair_e24.r2;
             elements.r1Value_e96.textContent = bestResPair_e96.r1; elements.r2Value_e96.textContent = bestResPair_e96.r2;
-            elements.voutTarget.textContent = Vout_target.toFixed(3);
-            elements.voutActual_e24.textContent = bestResPair_e24.vout.toFixed(3);
-            elements.voutError_e24.textContent = `${(bestResPair_e24.error * 1000).toFixed(1)}mV (${(bestResPair_e24.error / Vout_target * 100).toFixed(2)}%)`;
-            elements.voutActual_e96.textContent = bestResPair_e96.vout.toFixed(3);
-            elements.voutError_e96.textContent = `${(bestResPair_e96.error * 1000).toFixed(1)}mV (${(bestResPair_e96.error / Vout_target * 100).toFixed(2)}%)`;
+            
             elements.rfreqValue.textContent = Rfreq_kOhm_rec;
             elements.fswTarget.textContent = Fsw_kHz;
             elements.fswActual.textContent = (Fsw_actual_Hz / 1000).toFixed(1);
             elements.rilimValue.textContent = findNearestStandardValue(Rilim_kOhm, E24_KOHM);
             elements.ilimRec.textContent = Ilim_rec.toFixed(2);
             elements.cssValue.textContent = formatCapValue(Css_F * 1e9);
+            elements.tssActual.textContent = Tss_ms;
             elements.lRec.textContent = L_uH_rec;
             elements.ilpeakValue.textContent = ILpeak.toFixed(2);
             elements.isatRec.textContent = (ILpeak * 1.3).toFixed(2);
+            
+            // 电容结果展示
             elements.coutExact.textContent = (Cout_F_calc * 1e6).toFixed(2);
-            elements.coutRec.textContent = Cout_uF_rec;
-           <!-- elements.cinVoltRec.textContent = findNextStandardVoltage(Vin_max * 1.5); -->
-            elements.coutVoltRec.textContent = findNextStandardVoltage(Vout * 1.25);
+            elements.coutRec.textContent = Cout_uF_rec_single * Cout_count; // 理论推荐总值
+            elements.coutEffective.textContent = (Co_F_Effective * 1e6).toFixed(1); // 实际有效值
+            elements.coutUserTotal.textContent = C_User_Single_uF * Cout_count; // 用户填写的总标称值
 
             elements.fcRec.textContent = (Fc_Hz / 1000).toFixed(1);
             elements.r5Value.textContent = findNearestStandardValue(R5_Ohm / 1000, E24_KOHM);
             elements.c5Value.textContent = formatDetailedCap(C5_F);
+            
             const C8_pF = C8_F * 1e12;
             if (C8_pF < 10) {
-                elements.c8Value.textContent = "N/A";
-                elements.c8Note.textContent = "(< 10pF, 可悬空)";
+                elements.c8Value.textContent = "NC";
+                elements.c8Note.textContent = "(< 10pF, 可不贴)";
             } else {
                 elements.c8Value.textContent = formatDetailedCap(C8_F);
                 elements.c8Note.textContent = "";
